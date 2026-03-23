@@ -33,5 +33,11 @@ It connects equipment owners with renters, making the process of finding, listin
 - SQL
 ---
 
+## Team Members
+- Haya Alomar
+- Sara Aljuraybah
+- Deema Alquwaei
+- Dalal Alghumlas
+- Nourah almousa
 
 
