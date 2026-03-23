@@ -11,8 +11,13 @@ GreenRent is a web-based platform that allows users to rent agricultural equipme
 ## Technologies Used
 - HTML, CSS, JavaScript
 - PHP
-- MySQL (if used)
+
 
 ## Team Members
-- Haya
+- Haya Alomar
+- Sara Aljuraybah
+- Deema Alquwaei
+- Dalal Alghumlas
+- Nourah almousa
+
 - (باقي الفريق)
