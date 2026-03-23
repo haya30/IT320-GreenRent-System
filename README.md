@@ -20,4 +20,4 @@ GreenRent is a web-based platform that allows users to rent agricultural equipme
 - Dalal Alghumlas
 - Nourah almousa
 
-- (باقي الفريق)
+
