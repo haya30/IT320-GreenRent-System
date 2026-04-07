@@ -143,6 +143,58 @@
       padding: 24px;
     }
 
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .mode-btn {
+      border: 1.5px solid rgba(82,183,136,.18);
+      background: #f8fcf8;
+      color: var(--green-mid);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      transition: .2s;
+      text-align: center;
+    }
+
+    .mode-btn.active {
+      background: var(--green-mid);
+      color: white;
+      border-color: var(--green-mid);
+      box-shadow: 0 4px 14px rgba(45,106,79,.20);
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .mode-note {
+      background: #f8fcf8;
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .edit-select-wrap {
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .edit-select-wrap.show {
+      display: block;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -437,7 +489,8 @@
         padding: 24px 16px 0;
       }
 
-      .form-grid {
+      .form-grid,
+      .mode-switch {
         grid-template-columns: 1fr;
       }
 
@@ -470,16 +523,8 @@
         <li><a href="view-reservations.html">Reservations</a></li>
       </ul>
 
-      <div class="gr-search">
-        <svg class="gr-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input type="text" placeholder="Search equipment..." />
-      </div>
-
       <div class="gr-nav-actions">
-        <a href="index.html" class="btn btn-outline">Home</a>
+        <a href="owner-profile.html" class="btn btn-outline">Profile</a>
         <a href="login.html" class="btn btn-solid">Log Out</a>
       </div>
     </nav>
@@ -490,12 +535,11 @@
       <div class="equip-hero-text">
         <div class="equip-badge">
           <span class="equip-badge-dot"></span>
-          Equipment Management
+          <span id="heroModeLabel">Add Mode</span>
         </div>
-        <h1>Add or edit your equipment listings</h1>
-        <p>
-          Create a professional equipment listing with all the key details farmers need,
-          or update existing information such as category, price, location, and availability.
+        <h1 id="heroTitle">Add a new equipment listing</h1>
+        <p id="heroDescription">
+          Create a professional equipment listing with all the key details farmers need. You can switch to edit mode anytime if you want to update an existing listing instead.
         </p>
       </div>
 
@@ -508,62 +552,85 @@
     <section class="equip-layout">
       <div class="form-panel">
         <div class="panel-head">
-          <h2>Equipment Details</h2>
-          <span>Fill in the required fields below</span>
+          <h2 id="panelTitle">Add New Equipment</h2>
+          <span id="panelHint">You are currently creating a new listing</span>
         </div>
 
         <div class="form-body">
-          <form>
+          <div class="mode-switch">
+            <button type="button" class="mode-btn active" id="addModeBtn">Add New Equipment</button>
+            <button type="button" class="mode-btn" id="editModeBtn">Edit Existing Equipment</button>
+          </div>
+
+          <div class="mode-note" id="modeNote">
+            You are currently in <strong>Add Mode</strong>. Fill in the form below to create a brand new equipment listing.
+          </div>
+
+          <div class="edit-select-wrap" id="editSelectWrap">
+            <div class="form-group">
+              <label class="form-label">Choose Equipment to Edit</label>
+              <select class="form-select" id="equipmentToEdit">
+                <option value="">Select equipment</option>
+                <option value="tractor">John Deere Tractor</option>
+                <option value="harvester">Crop Harvester</option>
+                <option value="pump">Irrigation Pump</option>
+                <option value="trailer">Transport Trailer</option>
+              </select>
+              <div class="field-note">Choose an existing listing to load its current information into the form.</div>
+            </div>
+          </div>
+
+          <form id="equipmentForm">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">Equipment Name <span>*</span></label>
-                <input type="text" class="form-input" placeholder="e.g. John Deere Tractor" />
+                <input type="text" class="form-input" id="equipmentName" placeholder="e.g. John Deere Tractor" />
               </div>
 
               <div class="form-group">
                 <label class="form-label">Category <span>*</span></label>
-                <select class="form-select">
-                  <option>Select category</option>
-                  <option>Tractor</option>
-                  <option>Harvester</option>
-                  <option>Irrigation Equipment</option>
-                  <option>Transport Equipment</option>
-                  <option>Other</option>
+                <select class="form-select" id="equipmentCategory">
+                  <option value="">Select category</option>
+                  <option value="Tractor">Tractor</option>
+                  <option value="Harvester">Harvester</option>
+                  <option value="Irrigation Equipment">Irrigation Equipment</option>
+                  <option value="Transport Equipment">Transport Equipment</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="form-label">Price per Day (SAR) <span>*</span></label>
-                <input type="number" class="form-input" placeholder="e.g. 850" />
+                <input type="number" class="form-input" id="equipmentPrice" placeholder="e.g. 850" />
               </div>
 
               <div class="form-group">
                 <label class="form-label">Location <span>*</span></label>
-                <input type="text" class="form-input" placeholder="e.g. Riyadh" />
+                <input type="text" class="form-input" id="equipmentLocation" placeholder="e.g. Riyadh" />
               </div>
 
               <div class="form-group">
                 <label class="form-label">Availability Status <span>*</span></label>
-                <select class="form-select">
-                  <option>Available</option>
-                  <option>Booked</option>
-                  <option>Pending</option>
+                <select class="form-select" id="equipmentStatus">
+                  <option value="Available">Available</option>
+                  <option value="Booked">Booked</option>
+                  <option value="Pending">Pending</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="form-label">Equipment Condition</label>
-                <select class="form-select">
-                  <option>Select condition</option>
-                  <option>Excellent</option>
-                  <option>Good</option>
-                  <option>Used</option>
+                <select class="form-select" id="equipmentCondition">
+                  <option value="">Select condition</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Used">Used</option>
                 </select>
               </div>
 
               <div class="form-group full">
                 <label class="form-label">Short Description <span>*</span></label>
-                <textarea class="form-textarea" placeholder="Write a clear description about the equipment, usage, and key details..."></textarea>
+                <textarea class="form-textarea" id="equipmentDescription" placeholder="Write a clear description about the equipment, usage, and key details..."></textarea>
                 <div class="field-note">Keep the description short, clear, and helpful for farmers.</div>
               </div>
 
@@ -571,10 +638,9 @@
                 <label class="form-label">Upload Equipment Image</label>
                 <div class="upload-box">
                   <div class="upload-icon">📷</div>
-                  <h3>Upload a clear equipment image</h3>
-                  <p>
-                    Use a clear photo that helps farmers recognize the equipment easily.
-                    This is a UI-only page, so the upload is for interface display.
+                  <h3 id="uploadTitle">Upload a clear equipment image</h3>
+                  <p id="uploadDescription">
+                    Use a clear photo that helps farmers recognize the equipment easily. This is a UI-only page, so the upload is for interface display.
                   </p>
                   <input type="file" />
                 </div>
@@ -582,8 +648,9 @@
             </div>
 
             <div class="form-actions">
-              <button type="reset" class="btn btn-outline">Clear</button>
-              <button type="submit" class="btn btn-solid">Save Equipment</button>
+              <button type="button" class="btn btn-outline" id="switchModeBtn">Switch to Edit Mode</button>
+              <button type="reset" class="btn btn-outline" id="clearBtn">Clear</button>
+              <button type="submit" class="btn btn-solid" id="saveBtn">Add Equipment</button>
             </div>
           </form>
         </div>
@@ -636,30 +703,30 @@
 
     <section class="preview-box">
       <div class="preview-head">
-        <h2>Listing Preview</h2>
-        <span>How the equipment may appear to users</span>
+        <h2 id="previewTitle">New Listing Preview</h2>
+        <span id="previewHint">How the equipment may appear to users</span>
       </div>
 
       <div class="preview-card">
-        <div class="preview-image">🚜</div>
+        <div class="preview-image" id="previewImage">🚜</div>
 
         <div class="preview-content">
-          <h3>John Deere Tractor</h3>
+          <h3 id="previewName">John Deere Tractor</h3>
 
           <div class="preview-meta">
-            <span class="meta-badge">Tractor</span>
-            <span class="meta-badge">Riyadh</span>
-            <span class="meta-badge">Available</span>
+            <span class="meta-badge" id="previewCategory">Tractor</span>
+            <span class="meta-badge" id="previewLocation">Riyadh</span>
+            <span class="meta-badge" id="previewStatus">Available</span>
           </div>
 
-          <p>
+          <p id="previewDescription">
             Powerful agricultural tractor suitable for heavy farm tasks and field preparation.
             Well-maintained and ready for daily rental use.
           </p>
 
           <div class="preview-bottom">
-            <div class="price-preview">850 SAR <span>/ day</span></div>
-            <a href="#" class="btn btn-outline">Edit Preview</a>
+            <div class="price-preview"><span id="previewPrice">850</span> SAR <span>/ day</span></div>
+            <a href="#" class="btn btn-outline" id="previewButton">Previewing Add Mode</a>
           </div>
         </div>
       </div>
@@ -703,6 +770,203 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    const addModeBtn = document.getElementById("addModeBtn");
+    const editModeBtn = document.getElementById("editModeBtn");
+    const switchModeBtn = document.getElementById("switchModeBtn");
+    const editSelectWrap = document.getElementById("editSelectWrap");
+    const equipmentToEdit = document.getElementById("equipmentToEdit");
+
+    const heroModeLabel = document.getElementById("heroModeLabel");
+    const heroTitle = document.getElementById("heroTitle");
+    const heroDescription = document.getElementById("heroDescription");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelHint = document.getElementById("panelHint");
+    const modeNote = document.getElementById("modeNote");
+    const saveBtn = document.getElementById("saveBtn");
+    const previewTitle = document.getElementById("previewTitle");
+    const previewButton = document.getElementById("previewButton");
+    const uploadTitle = document.getElementById("uploadTitle");
+    const uploadDescription = document.getElementById("uploadDescription");
+
+    const equipmentName = document.getElementById("equipmentName");
+    const equipmentCategory = document.getElementById("equipmentCategory");
+    const equipmentPrice = document.getElementById("equipmentPrice");
+    const equipmentLocation = document.getElementById("equipmentLocation");
+    const equipmentStatus = document.getElementById("equipmentStatus");
+    const equipmentCondition = document.getElementById("equipmentCondition");
+    const equipmentDescription = document.getElementById("equipmentDescription");
+    const equipmentForm = document.getElementById("equipmentForm");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const previewName = document.getElementById("previewName");
+    const previewCategory = document.getElementById("previewCategory");
+    const previewLocation = document.getElementById("previewLocation");
+    const previewStatus = document.getElementById("previewStatus");
+    const previewDescription = document.getElementById("previewDescription");
+    const previewPrice = document.getElementById("previewPrice");
+    const previewImage = document.getElementById("previewImage");
+
+    let currentMode = "add";
+
+    const equipmentData = {
+      tractor: {
+        name: "John Deere Tractor",
+        category: "Tractor",
+        price: "850",
+        location: "Riyadh",
+        status: "Available",
+        condition: "Excellent",
+        description: "Powerful agricultural tractor suitable for heavy farm tasks and field preparation. Well-maintained and ready for daily rental use.",
+        icon: "🚜"
+      },
+      harvester: {
+        name: "Crop Harvester",
+        category: "Harvester",
+        price: "1200",
+        location: "Al Kharj",
+        status: "Booked",
+        condition: "Good",
+        description: "Efficient crop harvester suitable for large-scale harvesting tasks with reliable day-to-day performance.",
+        icon: "🌾"
+      },
+      pump: {
+        name: "Irrigation Pump",
+        category: "Irrigation Equipment",
+        price: "300",
+        location: "Diriyah",
+        status: "Pending",
+        condition: "Good",
+        description: "Compact irrigation pump designed for regular farm watering needs and easy transport between sites.",
+        icon: "💧"
+      },
+      trailer: {
+        name: "Transport Trailer",
+        category: "Transport Equipment",
+        price: "650",
+        location: "Riyadh",
+        status: "Available",
+        condition: "Used",
+        description: "Strong transport trailer for moving agricultural tools, supplies, and medium-sized farm equipment.",
+        icon: "🚛"
+      }
+    };
+
+    function updatePreview() {
+      previewName.textContent = equipmentName.value || "Equipment Name";
+      previewCategory.textContent = equipmentCategory.value || "Category";
+      previewLocation.textContent = equipmentLocation.value || "Location";
+      previewStatus.textContent = equipmentStatus.value || "Status";
+      previewDescription.textContent = equipmentDescription.value || "Your equipment description will appear here.";
+      previewPrice.textContent = equipmentPrice.value || "0";
+
+      const category = equipmentCategory.value;
+      if (category === "Tractor") previewImage.textContent = "🚜";
+      else if (category === "Harvester") previewImage.textContent = "🌾";
+      else if (category === "Irrigation Equipment") previewImage.textContent = "💧";
+      else if (category === "Transport Equipment") previewImage.textContent = "🚛";
+      else previewImage.textContent = "📦";
+    }
+
+    function fillForm(data) {
+      equipmentName.value = data.name;
+      equipmentCategory.value = data.category;
+      equipmentPrice.value = data.price;
+      equipmentLocation.value = data.location;
+      equipmentStatus.value = data.status;
+      equipmentCondition.value = data.condition;
+      equipmentDescription.value = data.description;
+      previewImage.textContent = data.icon;
+      updatePreview();
+    }
+
+    function clearFormFields() {
+      equipmentForm.reset();
+      previewImage.textContent = "🚜";
+      updatePreview();
+    }
+
+    function setAddMode() {
+      currentMode = "add";
+      addModeBtn.classList.add("active");
+      editModeBtn.classList.remove("active");
+      editSelectWrap.classList.remove("show");
+
+      heroModeLabel.textContent = "Add Mode";
+      heroTitle.textContent = "Add a new equipment listing";
+      heroDescription.textContent = "Create a professional equipment listing with all the key details farmers need. You can switch to edit mode anytime if you want to update an existing listing instead.";
+
+      panelTitle.textContent = "Add New Equipment";
+      panelHint.textContent = "You are currently creating a new listing";
+      modeNote.innerHTML = 'You are currently in <strong>Add Mode</strong>. Fill in the form below to create a brand new equipment listing.';
+      saveBtn.textContent = "Add Equipment";
+      switchModeBtn.textContent = "Switch to Edit Mode";
+      previewTitle.textContent = "New Listing Preview";
+      previewButton.textContent = "Previewing Add Mode";
+      uploadTitle.textContent = "Upload a clear equipment image";
+      uploadDescription.textContent = "Use a clear photo that helps farmers recognize the equipment easily. This is a UI-only page, so the upload is for interface display.";
+
+      equipmentToEdit.value = "";
+      clearFormFields();
+    }
+
+    function setEditMode() {
+      currentMode = "edit";
+      editModeBtn.classList.add("active");
+      addModeBtn.classList.remove("active");
+      editSelectWrap.classList.add("show");
+
+      heroModeLabel.textContent = "Edit Mode";
+      heroTitle.textContent = "Edit an existing equipment listing";
+      heroDescription.textContent = "Update a listing you already created. You can change your mind anytime and switch back to add mode to create a new equipment listing instead.";
+
+      panelTitle.textContent = "Edit Equipment";
+      panelHint.textContent = "You are currently modifying an existing listing";
+      modeNote.innerHTML = 'You are currently in <strong>Edit Mode</strong>. Choose an equipment item first, then update any field you want.';
+      saveBtn.textContent = "Save Changes";
+      switchModeBtn.textContent = "Switch to Add Mode";
+      previewTitle.textContent = "Edited Listing Preview";
+      previewButton.textContent = "Previewing Edit Mode";
+      uploadTitle.textContent = "Replace equipment image if needed";
+      uploadDescription.textContent = "If you want, upload a new image to replace the current one shown in the listing.";
+
+      clearFormFields();
+    }
+
+    addModeBtn.addEventListener("click", setAddMode);
+    editModeBtn.addEventListener("click", setEditMode);
+
+    switchModeBtn.addEventListener("click", function () {
+      if (currentMode === "add") setEditMode();
+      else setAddMode();
+    });
+
+    equipmentToEdit.addEventListener("change", function () {
+      const selected = equipmentData[this.value];
+      if (selected) {
+        fillForm(selected);
+      } else {
+        clearFormFields();
+      }
+    });
+
+    [equipmentName, equipmentCategory, equipmentPrice, equipmentLocation, equipmentStatus, equipmentDescription].forEach((field) => {
+      field.addEventListener("input", updatePreview);
+      field.addEventListener("change", updatePreview);
+    });
+
+    clearBtn.addEventListener("click", function () {
+      setTimeout(updatePreview, 0);
+    });
+
+    equipmentForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert(currentMode === "add" ? "Equipment added successfully." : "Equipment changes saved successfully.");
+    });
+
+    updatePreview();
+  </script>
 
 </body>
 </html>
