@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenRent – Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="adminStyle.css" rel="stylesheet"/>
+</head>
+<body>
+
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div style="display:flex;align-items:center;flex-shrink:0;">
+      <a href="admin-dashboard.html" class="admin-logo">
+        <img src="logo.png" alt="GreenRent Logo"/>
+        <div class="admin-logo-text"><span>GreenRent</span><span>Agricultural Equipment</span></div>
+      </a>
+    </div>
+
+    <ul class="admin-nav">
+      <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="admin-users.html">User Accounts</a></li>
+      <li><a href="admin-listings.html">Equipment Listings</a></li>
+      <li><a href="admin-reviews.html">Reviews & Ratings</a></li>
+    </ul>
+
+    <div class="admin-header-right">
+      <div class="admin-profile">
+        <div class="admin-avatar">A</div>
+        <span class="admin-profile-name">Admin</span>
+      </div>
+      <div class="admin-divider"></div>
+      <a href="login.html" class="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Log Out
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <div class="page-title-row">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome back. Here's what's happening on GreenRent today.</p>
+    </div>
+  </div>
+
+  <!-- 3 stat cards — Total Reservations removed -->
+  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="#2d6a4f" stroke-width="2"/></svg>
+        </div>
+      </div>
+      <div class="stat-value">4</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="stat-value">5</div>
+      <div class="stat-label">Active Listings</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div class="stat-icon red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stat-trend down">2 flagged</span>
+      </div>
+      <div class="stat-value">2</div>
+      <div class="stat-label">Flagged Reviews</div>
+    </div>
+
+  </div>
+
+  <!-- Quick nav shortcuts -->
+  <div class="shortcuts-grid">
+    <a href="admin-users.html" class="shortcut-card">
+      <div class="stat-icon green" style="flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="#2d6a4f" stroke-width="2"/></svg>
+      </div>
+      <div class="shortcut-card-text">
+        <strong>User Accounts</strong>
+        <span>View, suspend, or reactivate accounts</span>
+      </div>
+    </a>
+    <a href="admin-listings.html" class="shortcut-card">
+      <div class="stat-icon green" style="flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#2d6a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="shortcut-card-text">
+        <strong>Equipment Listings</strong>
+        <span>Review and deactivate listings</span>
+      </div>
+    </a>
+    <a href="admin-reviews.html" class="shortcut-card">
+      <div class="stat-icon red" style="flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="shortcut-card-text">
+        <strong>Reviews & Ratings</strong>
+        <span>Monitor reviews</span>
+      </div>
+    </a>
+  </div>
+
+</main>
+</body>
+</html>

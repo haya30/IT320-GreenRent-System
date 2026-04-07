@@ -1,0 +1,232 @@
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep:   #1a3c2b;
+      --green-mid:    #2d6a4f;
+      --green-light:  #52b788;
+      --green-pale:   #d8f3dc;
+      --gold:         #c9a84c;
+      --cream:        #faf7f0;
+      --text-dark:    #1a2e1e;
+      --text-muted:   #5a7a62;
+      --white:        #ffffff;
+      --shadow-sm:    0 2px 8px rgba(26,60,43,.10);
+      --shadow-md:    0 6px 24px rgba(26,60,43,.16);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #eef5ee;
+      color: var(--text-dark);
+    }
+
+    /* ─────────────── HEADER ─────────────── */
+    .gr-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid rgba(82,183,136,.20);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .gr-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    /* Logo */
+    .gr-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .gr-logo img {
+      height: 42px;
+      width: auto;
+      display: block;
+    }
+    .gr-logo-text { line-height: 1; }
+    .gr-logo-text span:first-child {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--green-deep);
+      letter-spacing: -.3px;
+    }
+    .gr-logo-text span:last-child {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    /* Nav links */
+    .gr-navlinks {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+    .gr-navlinks a {
+      display: block;
+      padding: 8px 14px;
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text-dark);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background .18s, color .18s;
+      position: relative;
+    }
+    .gr-navlinks a:hover {
+      background: var(--green-pale);
+      color: var(--green-mid);
+    }
+
+
+    
+
+    /* Search bar */
+    .gr-search {
+      flex: 1;
+      max-width: 340px;
+      position: relative;
+    }
+    .gr-search input {
+      width: 100%;
+      padding: 9px 16px 9px 40px;
+      border: 1.5px solid rgba(82,183,136,.30);
+      border-radius: 10px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      color: var(--text-dark);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .gr-search input::placeholder { color: var(--text-muted); }
+    .gr-search input:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(82,183,136,.15);
+    }
+    .gr-search-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* CTA buttons */
+    .gr-nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; border-radius: 10px; padding: 9px 18px; cursor: pointer; border: none; transition: all .18s; text-decoration: none; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--green-mid); color: var(--green-mid); }
+    .btn-outline:hover { background: var(--green-pale); }
+    .btn-solid { background: var(--green-mid); color: var(--white); box-shadow: 0 2px 8px rgba(45,106,79,.30); }
+    .btn-solid:hover { background: var(--green-deep); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(45,106,79,.35); }
+
+    
+    /* ─────────────── FOOTER ─────────────── */
+    footer {
+      background: var(--green-deep);
+      color: rgba(255,255,255,.85);
+      margin-top: 80px;
+    }
+
+    .footer-wave {
+      display: block;
+      width: 100%;
+      height: 50px;
+    }
+
+    .footer-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 32px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+
+    .footer-logo img {
+      height: 48px;
+      width: auto;
+      display: block;
+      border-radius: 10%;
+    }
+
+    .footer-tagline {
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: rgba(255,255,255,.60);
+      max-width: 480px;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 10px;
+    }
+    .footer-social a {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      transition: background .2s, border-color .2s;
+    }
+    .footer-social a:hover { background: var(--green-light); border-color: var(--green-light); color: var(--white); }
+
+    .footer-badges {
+      border-top: 1px solid rgba(255,255,255,.10);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .f-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      color: rgba(255,255,255,.65);
+    }
+    .f-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); }
+
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.10); }
+    .footer-bottom-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      text-align: center;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.40);
+    }
+
+    @media (max-width: 900px) {
+      .gr-search { display: none; }
+    }
+    @media (max-width: 600px) {
+      .gr-navlinks { display: none; }
+    }

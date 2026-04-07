@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add / Edit Equipment | GreenRent</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <link href="style.css" rel="stylesheet"/>
+
+  <style>
+    .equip-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 32px 0;
+    }
+
+    .equip-hero {
+      background: linear-gradient(135deg, rgba(26,60,43,0.98), rgba(45,106,79,0.95));
+      border-radius: 22px;
+      padding: 34px 32px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .equip-hero::after {
+      content: "";
+      position: absolute;
+      right: -45px;
+      top: -45px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+
+    .equip-hero-text,
+    .equip-hero-actions {
+      position: relative;
+      z-index: 1;
+    }
+
+    .equip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .equip-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    .equip-hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.15;
+      margin-bottom: 10px;
+      letter-spacing: -.4px;
+    }
+
+    .equip-hero p {
+      font-size: 14.5px;
+      line-height: 1.7;
+      color: rgba(255,255,255,.82);
+      max-width: 680px;
+    }
+
+    .equip-hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-self: center;
+    }
+
+    .btn-soft {
+      background: rgba(255,255,255,.10);
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,.16);
+    }
+
+    .btn-soft:hover {
+      background: rgba(255,255,255,.16);
+    }
+
+    .equip-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .form-panel,
+    .tips-panel {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 20px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 22px 24px;
+      border-bottom: 1px solid rgba(82,183,136,.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h2 {
+      font-size: 22px;
+      color: var(--green-deep);
+      font-family: 'DM Serif Display', serif;
+      letter-spacing: -.2px;
+    }
+
+    .panel-head span {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .form-body {
+      padding: 24px;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .mode-btn {
+      border: 1.5px solid rgba(82,183,136,.18);
+      background: #f8fcf8;
+      color: var(--green-mid);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      transition: .2s;
+      text-align: center;
+    }
+
+    .mode-btn.active {
+      background: var(--green-mid);
+      color: white;
+      border-color: var(--green-mid);
+      box-shadow: 0 4px 14px rgba(45,106,79,.20);
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .mode-note {
+      background: #f8fcf8;
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .edit-select-wrap {
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .edit-select-wrap.show {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .form-label span {
+      color: #dc2626;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid rgba(82,183,136,.25);
+      border-radius: 12px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(82,183,136,.15);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a7a62' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .form-textarea {
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .field-note {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .upload-box {
+      border: 1.5px dashed rgba(82,183,136,.35);
+      background: #f8fcf8;
+      border-radius: 16px;
+      padding: 22px;
+      text-align: center;
+      transition: .2s;
+    }
+
+    .upload-box:hover {
+      border-color: var(--green-light);
+      background: #f4fbf5;
+    }
+
+    .upload-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--green-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 12px;
+    }
+
+    .upload-box h3 {
+      font-size: 16px;
+      color: var(--green-deep);
+      margin-bottom: 6px;
+    }
+
+    .upload-box p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .upload-box input[type="file"] {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text-dark);
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 22px;
+      margin-top: 22px;
+      border-top: 1px solid rgba(82,183,136,.12);
+    }
+
+    .tips-body {
+      padding: 22px 24px 24px;
+    }
+
+    .info-card {
+      background: #f8fcf8;
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .info-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-card .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--green-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .info-card h3 {
+      font-size: 16px;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .info-card p,
+    .info-card ul {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .info-card ul {
+      padding-left: 18px;
+    }
+
+    .preview-box {
+      margin-top: 22px;
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 18px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .preview-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid rgba(82,183,136,.12);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .preview-head h2 {
+      font-size: 22px;
+      color: var(--green-deep);
+      font-family: 'DM Serif Display', serif;
+    }
+
+    .preview-card {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .preview-image {
+      width: 100%;
+      min-height: 180px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #d8f3dc, #b7e4c7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green-deep);
+      font-size: 42px;
+      border: 1px solid rgba(82,183,136,.14);
+    }
+
+    .preview-content h3 {
+      font-size: 24px;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .preview-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-pale);
+      border: 1px solid rgba(82,183,136,.18);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--green-mid);
+    }
+
+    .preview-content p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 16px;
+      max-width: 700px;
+    }
+
+    .preview-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 14px;
+      border-top: 1px solid rgba(82,183,136,.12);
+    }
+
+    .price-preview {
+      font-size: 26px;
+      font-family: 'DM Serif Display', serif;
+      color: var(--green-deep);
+    }
+
+    .price-preview span {
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    @media (max-width: 1000px) {
+      .equip-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-card {
+        grid-template-columns: 1fr;
+      }
+
+      .equip-hero {
+        flex-direction: column;
+      }
+
+      .equip-hero-actions {
+        align-self: flex-start;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .equip-page {
+        padding: 24px 16px 0;
+      }
+
+      .form-grid,
+      .mode-switch {
+        grid-template-columns: 1fr;
+      }
+
+      .equip-hero {
+        padding: 24px 20px;
+      }
+
+      .form-body,
+      .tips-body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="gr-header">
+    <nav class="gr-nav">
+      <a href="index.html" class="gr-logo">
+        <img src="logo.png" alt="GreenRent Logo" />
+        <div class="gr-logo-text">
+          <span>GreenRent</span>
+          <span>Agricultural Equipment</span>
+        </div>
+      </a>
+
+      <ul class="gr-navlinks">
+        <li><a href="owner-dashboard.html">Dashboard</a></li>
+        <li><a href="add-edit-equipment.html">Manage Equipment</a></li>
+        <li><a href="view-reservations.html">Reservations</a></li>
+      </ul>
+
+      <div class="gr-nav-actions">
+        <a href="owner-profile.html" class="btn btn-outline">Profile</a>
+        <a href="login.html" class="btn btn-solid">Log Out</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="equip-page">
+    <section class="equip-hero">
+      <div class="equip-hero-text">
+        <div class="equip-badge">
+          <span class="equip-badge-dot"></span>
+          <span id="heroModeLabel">Add Mode</span>
+        </div>
+        <h1 id="heroTitle">Add a new equipment listing</h1>
+        <p id="heroDescription">
+          Create a professional equipment listing with all the key details farmers need. You can switch to edit mode anytime if you want to update an existing listing instead.
+        </p>
+      </div>
+
+      <div class="equip-hero-actions">
+        <a href="owner-dashboard.html" class="btn btn-soft">Back to Dashboard</a>
+        <a href="view-reservations.html" class="btn btn-solid">View Reservations</a>
+      </div>
+    </section>
+
+    <section class="equip-layout">
+      <div class="form-panel">
+        <div class="panel-head">
+          <h2 id="panelTitle">Add New Equipment</h2>
+          <span id="panelHint">You are currently creating a new listing</span>
+        </div>
+
+        <div class="form-body">
+          <div class="mode-switch">
+            <button type="button" class="mode-btn active" id="addModeBtn">Add New Equipment</button>
+            <button type="button" class="mode-btn" id="editModeBtn">Edit Existing Equipment</button>
+          </div>
+
+          <div class="mode-note" id="modeNote">
+            You are currently in <strong>Add Mode</strong>. Fill in the form below to create a brand new equipment listing.
+          </div>
+
+          <div class="edit-select-wrap" id="editSelectWrap">
+            <div class="form-group">
+              <label class="form-label">Choose Equipment to Edit</label>
+              <select class="form-select" id="equipmentToEdit">
+                <option value="">Select equipment</option>
+                <option value="tractor">John Deere Tractor</option>
+                <option value="harvester">Crop Harvester</option>
+                <option value="pump">Irrigation Pump</option>
+                <option value="trailer">Transport Trailer</option>
+              </select>
+              <div class="field-note">Choose an existing listing to load its current information into the form.</div>
+            </div>
+          </div>
+
+          <form id="equipmentForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Equipment Name <span>*</span></label>
+                <input type="text" class="form-input" id="equipmentName" placeholder="e.g. John Deere Tractor" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Category <span>*</span></label>
+                <select class="form-select" id="equipmentCategory">
+                  <option value="">Select category</option>
+                  <option value="Tractor">Tractor</option>
+                  <option value="Harvester">Harvester</option>
+                  <option value="Irrigation Equipment">Irrigation Equipment</option>
+                  <option value="Transport Equipment">Transport Equipment</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Price per Day (SAR) <span>*</span></label>
+                <input type="number" class="form-input" id="equipmentPrice" placeholder="e.g. 850" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Location <span>*</span></label>
+                <input type="text" class="form-input" id="equipmentLocation" placeholder="e.g. Riyadh" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Availability Status <span>*</span></label>
+                <select class="form-select" id="equipmentStatus">
+                  <option value="Available">Available</option>
+                  <option value="Booked">Booked</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Equipment Condition</label>
+                <select class="form-select" id="equipmentCondition">
+                  <option value="">Select condition</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Used">Used</option>
+                </select>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Short Description <span>*</span></label>
+                <textarea class="form-textarea" id="equipmentDescription" placeholder="Write a clear description about the equipment, usage, and key details..."></textarea>
+                <div class="field-note">Keep the description short, clear, and helpful for farmers.</div>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Upload Equipment Image</label>
+                <div class="upload-box">
+                  <div class="upload-icon">📷</div>
+                  <h3 id="uploadTitle">Upload a clear equipment image</h3>
+                  <p id="uploadDescription">
+                    Use a clear photo that helps farmers recognize the equipment easily. This is a UI-only page, so the upload is for interface display.
+                  </p>
+                  <input type="file" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" id="switchModeBtn">Switch to Edit Mode</button>
+              <button type="reset" class="btn btn-outline" id="clearBtn">Clear</button>
+              <button type="submit" class="btn btn-solid" id="saveBtn">Add Equipment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="tips-panel">
+        <div class="panel-head">
+          <h2>Listing Tips</h2>
+          <span>Make your listing clearer</span>
+        </div>
+
+        <div class="tips-body">
+          <div class="info-card">
+            <div class="icon">📝</div>
+            <h3>Write a clear title</h3>
+            <p>
+              Use a direct equipment name so users can quickly understand what the listing offers.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <div class="icon">📍</div>
+            <h3>Add the correct location</h3>
+            <p>
+              Make sure the location is accurate so farmers know where the equipment is available.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <div class="icon">💰</div>
+            <h3>Set a clear daily price</h3>
+            <p>
+              Show the rental price per day in SAR to avoid confusion during booking.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <div class="icon">✅</div>
+            <h3>Recommended fields</h3>
+            <ul>
+              <li>Clear equipment name</li>
+              <li>Category and location</li>
+              <li>Availability status</li>
+              <li>Short and useful description</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="preview-box">
+      <div class="preview-head">
+        <h2 id="previewTitle">New Listing Preview</h2>
+        <span id="previewHint">How the equipment may appear to users</span>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-image" id="previewImage">🚜</div>
+
+        <div class="preview-content">
+          <h3 id="previewName">John Deere Tractor</h3>
+
+          <div class="preview-meta">
+            <span class="meta-badge" id="previewCategory">Tractor</span>
+            <span class="meta-badge" id="previewLocation">Riyadh</span>
+            <span class="meta-badge" id="previewStatus">Available</span>
+          </div>
+
+          <p id="previewDescription">
+            Powerful agricultural tractor suitable for heavy farm tasks and field preparation.
+            Well-maintained and ready for daily rental use.
+          </p>
+
+          <div class="preview-bottom">
+            <div class="price-preview"><span id="previewPrice">850</span> SAR <span>/ day</span></div>
+            <a href="#" class="btn btn-outline" id="previewButton">Previewing Add Mode</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
+      <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
+    </svg>
+
+    <div class="footer-main">
+      <div class="footer-logo">
+        <img src="logo.png" alt="GreenRent Logo" />
+      </div>
+
+      <p class="footer-tagline">
+        A trusted platform connecting farmers and equipment owners across Riyadh.
+      </p>
+
+      <div class="footer-social">
+        <a href="#" aria-label="Twitter">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+        </a>
+
+        <a href="#" aria-label="Instagram">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-badges">
+      <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
+      <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
+      <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-bottom-inner">
+        © 2026 GreenRent. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const addModeBtn = document.getElementById("addModeBtn");
+    const editModeBtn = document.getElementById("editModeBtn");
+    const switchModeBtn = document.getElementById("switchModeBtn");
+    const editSelectWrap = document.getElementById("editSelectWrap");
+    const equipmentToEdit = document.getElementById("equipmentToEdit");
+
+    const heroModeLabel = document.getElementById("heroModeLabel");
+    const heroTitle = document.getElementById("heroTitle");
+    const heroDescription = document.getElementById("heroDescription");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelHint = document.getElementById("panelHint");
+    const modeNote = document.getElementById("modeNote");
+    const saveBtn = document.getElementById("saveBtn");
+    const previewTitle = document.getElementById("previewTitle");
+    const previewButton = document.getElementById("previewButton");
+    const uploadTitle = document.getElementById("uploadTitle");
+    const uploadDescription = document.getElementById("uploadDescription");
+
+    const equipmentName = document.getElementById("equipmentName");
+    const equipmentCategory = document.getElementById("equipmentCategory");
+    const equipmentPrice = document.getElementById("equipmentPrice");
+    const equipmentLocation = document.getElementById("equipmentLocation");
+    const equipmentStatus = document.getElementById("equipmentStatus");
+    const equipmentCondition = document.getElementById("equipmentCondition");
+    const equipmentDescription = document.getElementById("equipmentDescription");
+    const equipmentForm = document.getElementById("equipmentForm");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const previewName = document.getElementById("previewName");
+    const previewCategory = document.getElementById("previewCategory");
+    const previewLocation = document.getElementById("previewLocation");
+    const previewStatus = document.getElementById("previewStatus");
+    const previewDescription = document.getElementById("previewDescription");
+    const previewPrice = document.getElementById("previewPrice");
+    const previewImage = document.getElementById("previewImage");
+
+    let currentMode = "add";
+
+    const equipmentData = {
+      tractor: {
+        name: "John Deere Tractor",
+        category: "Tractor",
+        price: "850",
+        location: "Riyadh",
+        status: "Available",
+        condition: "Excellent",
+        description: "Powerful agricultural tractor suitable for heavy farm tasks and field preparation. Well-maintained and ready for daily rental use.",
+        icon: "🚜"
+      },
+      harvester: {
+        name: "Crop Harvester",
+        category: "Harvester",
+        price: "1200",
+        location: "Al Kharj",
+        status: "Booked",
+        condition: "Good",
+        description: "Efficient crop harvester suitable for large-scale harvesting tasks with reliable day-to-day performance.",
+        icon: "🌾"
+      },
+      pump: {
+        name: "Irrigation Pump",
+        category: "Irrigation Equipment",
+        price: "300",
+        location: "Diriyah",
+        status: "Pending",
+        condition: "Good",
+        description: "Compact irrigation pump designed for regular farm watering needs and easy transport between sites.",
+        icon: "💧"
+      },
+      trailer: {
+        name: "Transport Trailer",
+        category: "Transport Equipment",
+        price: "650",
+        location: "Riyadh",
+        status: "Available",
+        condition: "Used",
+        description: "Strong transport trailer for moving agricultural tools, supplies, and medium-sized farm equipment.",
+        icon: "🚛"
+      }
+    };
+
+    function updatePreview() {
+      previewName.textContent = equipmentName.value || "Equipment Name";
+      previewCategory.textContent = equipmentCategory.value || "Category";
+      previewLocation.textContent = equipmentLocation.value || "Location";
+      previewStatus.textContent = equipmentStatus.value || "Status";
+      previewDescription.textContent = equipmentDescription.value || "Your equipment description will appear here.";
+      previewPrice.textContent = equipmentPrice.value || "0";
+
+      const category = equipmentCategory.value;
+      if (category === "Tractor") previewImage.textContent = "🚜";
+      else if (category === "Harvester") previewImage.textContent = "🌾";
+      else if (category === "Irrigation Equipment") previewImage.textContent = "💧";
+      else if (category === "Transport Equipment") previewImage.textContent = "🚛";
+      else previewImage.textContent = "📦";
+    }
+
+    function fillForm(data) {
+      equipmentName.value = data.name;
+      equipmentCategory.value = data.category;
+      equipmentPrice.value = data.price;
+      equipmentLocation.value = data.location;
+      equipmentStatus.value = data.status;
+      equipmentCondition.value = data.condition;
+      equipmentDescription.value = data.description;
+      previewImage.textContent = data.icon;
+      updatePreview();
+    }
+
+    function clearFormFields() {
+      equipmentForm.reset();
+      previewImage.textContent = "🚜";
+      updatePreview();
+    }
+
+    function setAddMode() {
+      currentMode = "add";
+      addModeBtn.classList.add("active");
+      editModeBtn.classList.remove("active");
+      editSelectWrap.classList.remove("show");
+
+      heroModeLabel.textContent = "Add Mode";
+      heroTitle.textContent = "Add a new equipment listing";
+      heroDescription.textContent = "Create a professional equipment listing with all the key details farmers need. You can switch to edit mode anytime if you want to update an existing listing instead.";
+
+      panelTitle.textContent = "Add New Equipment";
+      panelHint.textContent = "You are currently creating a new listing";
+      modeNote.innerHTML = 'You are currently in <strong>Add Mode</strong>. Fill in the form below to create a brand new equipment listing.';
+      saveBtn.textContent = "Add Equipment";
+      switchModeBtn.textContent = "Switch to Edit Mode";
+      previewTitle.textContent = "New Listing Preview";
+      previewButton.textContent = "Previewing Add Mode";
+      uploadTitle.textContent = "Upload a clear equipment image";
+      uploadDescription.textContent = "Use a clear photo that helps farmers recognize the equipment easily. This is a UI-only page, so the upload is for interface display.";
+
+      equipmentToEdit.value = "";
+      clearFormFields();
+    }
+
+    function setEditMode() {
+      currentMode = "edit";
+      editModeBtn.classList.add("active");
+      addModeBtn.classList.remove("active");
+      editSelectWrap.classList.add("show");
+
+      heroModeLabel.textContent = "Edit Mode";
+      heroTitle.textContent = "Edit an existing equipment listing";
+      heroDescription.textContent = "Update a listing you already created. You can change your mind anytime and switch back to add mode to create a new equipment listing instead.";
+
+      panelTitle.textContent = "Edit Equipment";
+      panelHint.textContent = "You are currently modifying an existing listing";
+      modeNote.innerHTML = 'You are currently in <strong>Edit Mode</strong>. Choose an equipment item first, then update any field you want.';
+      saveBtn.textContent = "Save Changes";
+      switchModeBtn.textContent = "Switch to Add Mode";
+      previewTitle.textContent = "Edited Listing Preview";
+      previewButton.textContent = "Previewing Edit Mode";
+      uploadTitle.textContent = "Replace equipment image if needed";
+      uploadDescription.textContent = "If you want, upload a new image to replace the current one shown in the listing.";
+
+      clearFormFields();
+    }
+
+    addModeBtn.addEventListener("click", setAddMode);
+    editModeBtn.addEventListener("click", setEditMode);
+
+    switchModeBtn.addEventListener("click", function () {
+      if (currentMode === "add") setEditMode();
+      else setAddMode();
+    });
+
+    equipmentToEdit.addEventListener("change", function () {
+      const selected = equipmentData[this.value];
+      if (selected) {
+        fillForm(selected);
+      } else {
+        clearFormFields();
+      }
+    });
+
+    [equipmentName, equipmentCategory, equipmentPrice, equipmentLocation, equipmentStatus, equipmentDescription].forEach((field) => {
+      field.addEventListener("input", updatePreview);
+      field.addEventListener("change", updatePreview);
+    });
+
+    clearBtn.addEventListener("click", function () {
+      setTimeout(updatePreview, 0);
+    });
+
+    equipmentForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert(currentMode === "add" ? "Equipment added successfully." : "Equipment changes saved successfully.");
+    });
+
+    updatePreview();
+  </script>
+
+</body>
+</html>
