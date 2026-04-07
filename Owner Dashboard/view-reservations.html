@@ -397,22 +397,6 @@
       background: var(--green-pale);
     }
 
-    .note-panel {
-      background: var(--white);
-      border: 1px solid rgba(82,183,136,.14);
-      border-radius: 20px;
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 30px;
-    }
-
-    .note-body {
-      padding: 22px 24px 24px;
-      color: var(--text-muted);
-      font-size: 13.5px;
-      line-height: 1.8;
-    }
-
     @media (max-width: 1050px) {
       .summary-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -442,8 +426,7 @@
         padding: 24px 20px;
       }
 
-      .filters-body,
-      .note-body {
+      .filters-body {
         padding: 20px;
       }
     }
@@ -467,16 +450,8 @@
         <li><a href="view-reservations.html">Reservations</a></li>
       </ul>
 
-      <div class="gr-search">
-        <svg class="gr-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input type="text" placeholder="Search equipment..." />
-      </div>
-
       <div class="gr-nav-actions">
-        <a href="index.html" class="btn btn-outline">Home</a>
+        <a href="owner-profile.html" class="btn btn-outline">Profile</a>
         <a href="login.html" class="btn btn-solid">Log Out</a>
       </div>
     </nav>
@@ -542,12 +517,12 @@
         <div class="filters-grid">
           <div class="filter-group">
             <label class="filter-label">Search</label>
-            <input type="text" class="filter-input" placeholder="Search by customer or equipment" />
+            <input type="text" id="reservationSearch" class="filter-input" placeholder="Search by customer or equipment" />
           </div>
 
           <div class="filter-group">
             <label class="filter-label">Status</label>
-            <select class="filter-select">
+            <select id="statusFilter" class="filter-select">
               <option>All Statuses</option>
               <option>Pending</option>
               <option>Confirmed</option>
@@ -557,7 +532,7 @@
 
           <div class="filter-group">
             <label class="filter-label">Equipment</label>
-            <select class="filter-select">
+            <select id="equipmentFilter" class="filter-select">
               <option>All Equipment</option>
               <option>John Deere Tractor</option>
               <option>Crop Harvester</option>
@@ -568,7 +543,7 @@
 
           <div class="filter-group">
             <label class="filter-label">Sort By</label>
-            <select class="filter-select">
+            <select id="sortFilter" class="filter-select">
               <option>Newest First</option>
               <option>Oldest First</option>
               <option>Status</option>
@@ -577,8 +552,8 @@
         </div>
 
         <div class="filter-actions">
-          <button class="btn btn-outline" type="button">Reset Filters</button>
-          <button class="btn btn-solid" type="button">Apply Filters</button>
+          <button id="resetFiltersBtn" class="btn btn-outline" type="button">Reset Filters</button>
+          <button id="applyFiltersBtn" class="btn btn-solid" type="button">Apply Filters</button>
         </div>
       </div>
     </section>
@@ -590,7 +565,7 @@
       </div>
 
       <div class="table-wrap">
-        <table>
+        <table id="reservationsTable">
           <thead>
             <tr>
               <th>Customer</th>
@@ -796,8 +771,6 @@
         </table>
       </div>
     </section>
-
-
   </main>
 
   <footer>
@@ -837,6 +810,136 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const searchInput = document.getElementById("reservationSearch");
+      const statusFilter = document.getElementById("statusFilter");
+      const equipmentFilter = document.getElementById("equipmentFilter");
+      const sortFilter = document.getElementById("sortFilter");
+      const applyBtn = document.getElementById("applyFiltersBtn");
+      const resetBtn = document.getElementById("resetFiltersBtn");
+      const table = document.getElementById("reservationsTable");
+      const tbody = table.querySelector("tbody");
+
+      const originalRows = Array.from(tbody.querySelectorAll("tr")).map((row, index) => {
+        row.dataset.originalIndex = index;
+        return row;
+      });
+
+      function getRowData(row) {
+        const customerName =
+          row.querySelector("td:nth-child(1) .cell-text strong")?.textContent.trim().toLowerCase() || "";
+
+        const equipmentName =
+          row.querySelector("td:nth-child(2) .cell-text strong")?.textContent.trim().toLowerCase() || "";
+
+        const dateRange =
+          row.querySelector("td:nth-child(3) .date-range")?.textContent.trim() || "";
+
+        const amountText =
+          row.querySelector("td:nth-child(4) .amount")?.textContent.replace(/[^\d]/g, "") || "0";
+
+        const statusText =
+          row.querySelector("td:nth-child(5) .status-badge")?.textContent.trim().toLowerCase() || "";
+
+        return {
+          customerName,
+          equipmentName,
+          dateRange,
+          amount: parseInt(amountText, 10),
+          statusText,
+          originalIndex: parseInt(row.dataset.originalIndex, 10)
+        };
+      }
+
+      function parseReservationDate(dateRangeText) {
+        const firstPart = dateRangeText.split("—")[0].trim();
+        const [dayStr, monthStr] = firstPart.split(" ");
+
+        const months = {
+          jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+          jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+        };
+
+        const day = parseInt(dayStr, 10);
+        const month = months[(monthStr || "").toLowerCase()] ?? 0;
+
+        return new Date(2026, month, day).getTime();
+      }
+
+      function applyFilters() {
+        const searchValue = searchInput.value.trim().toLowerCase();
+        const statusValue = statusFilter.value.trim().toLowerCase();
+        const equipmentValue = equipmentFilter.value.trim().toLowerCase();
+        const sortValue = sortFilter.value.trim().toLowerCase();
+
+        let rows = [...originalRows];
+
+        rows = rows.filter((row) => {
+          const data = getRowData(row);
+
+          const matchesSearch =
+            data.customerName.includes(searchValue) ||
+            data.equipmentName.includes(searchValue);
+
+          const matchesStatus =
+            statusValue === "all statuses" ||
+            data.statusText === statusValue;
+
+          const matchesEquipment =
+            equipmentValue === "all equipment" ||
+            data.equipmentName === equipmentValue;
+
+          return matchesSearch && matchesStatus && matchesEquipment;
+        });
+
+        rows.sort((a, b) => {
+          const dataA = getRowData(a);
+          const dataB = getRowData(b);
+
+          if (sortValue === "newest first") {
+            return parseReservationDate(dataB.dateRange) - parseReservationDate(dataA.dateRange);
+          }
+
+          if (sortValue === "oldest first") {
+            return parseReservationDate(dataA.dateRange) - parseReservationDate(dataB.dateRange);
+          }
+
+          if (sortValue === "status") {
+            return dataA.statusText.localeCompare(dataB.statusText);
+          }
+
+          return dataA.originalIndex - dataB.originalIndex;
+        });
+
+        tbody.innerHTML = "";
+
+        if (rows.length === 0) {
+          const noRow = document.createElement("tr");
+          noRow.innerHTML = '<td colspan="6" style="text-align:center; padding:24px; color:#5a7a62;">No matching reservations found.</td>';
+          tbody.appendChild(noRow);
+          return;
+        }
+
+        rows.forEach((row) => tbody.appendChild(row));
+      }
+
+      function resetFilters() {
+        searchInput.value = "";
+        statusFilter.selectedIndex = 0;
+        equipmentFilter.selectedIndex = 0;
+        sortFilter.selectedIndex = 0;
+
+        tbody.innerHTML = "";
+        originalRows.forEach((row) => tbody.appendChild(row));
+      }
+
+      applyBtn.addEventListener("click", applyFilters);
+      resetBtn.addEventListener("click", resetFilters);
+      searchInput.addEventListener("input", applyFilters);
+    });
+  </script>
 
 </body>
 </html>
