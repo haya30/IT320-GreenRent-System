@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenRent – User Accounts</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="adminStyle.css" rel="stylesheet"/>
+</head>
+<body>
+
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div style="display:flex;align-items:center;flex-shrink:0;">
+      <a href="admin-dashboard.html" class="admin-logo">
+        <img src="logo.jpg" alt="GreenRent Logo"/>
+        <div class="admin-logo-text"><span>GreenRent</span><span>Agricultural Equipment</span></div>
+      </a>
+    </div>
+
+    <ul class="admin-nav">
+      <li><a href="admin-dashboard.html">Dashboard</a></li>
+      <li><a href="admin-users.html" class="active">User Accounts</a></li>
+      <li><a href="admin-listings.html">Equipment Listings</a></li>
+      <li><a href="admin-reviews.html">Reviews & Ratings</a></li>
+    </ul>
+
+    <div class="admin-header-right">
+      <div class="admin-profile">
+        <div class="admin-avatar">A</div>
+        <span class="admin-profile-name">Admin</span>
+      </div>
+      <div class="admin-divider"></div>
+      <a href="login.html" class="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Log Out
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <div class="page-title-row">
+    <div>
+      <h1>User Accounts</h1>
+      <p>View all registered users - You can Suspend or reactivate accounts From here !</p>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-card-header">
+      <div>
+        <h2>All Users</h2>
+      </div>
+      <div class="table-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search users…" oninput="filterTable('users-tbody', this.value)"/>
+      </div>
+    </div>
+
+    <table class="full-table">
+      <thead>
+        <tr>
+          <th>Name &amp; Email</th>
+          <th>Role</th>
+          <th>Account Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody">
+        <tr id="urow-1">
+          <td><div class="user-cell"><span>Ali Al-Otaibi</span><span>ali@example.com</span></div></td>
+          <td>Farmer</td>
+          <td><span class="pill active" id="ustatus-1">Active</span></td>
+          <td><div class="action-btns">
+            <button class="icon-btn danger" onclick="openModal('suspend-modal','urow-1','ustatus-1','Ali Al-Otaibi')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
+              Suspend
+            </button>
+          </div></td>
+        </tr>
+        <tr id="urow-2">
+          <td><div class="user-cell"><span>Mohammed Salem</span><span>msalem@example.com</span></div></td>
+          <td>Equipment Owner</td>
+          <td><span class="pill active" id="ustatus-2">Active</span></td>
+          <td><div class="action-btns">
+            <button class="icon-btn danger" onclick="openModal('suspend-modal','urow-2','ustatus-2','Mohammed Salem')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
+              Suspend
+            </button>
+          </div></td>
+        </tr>
+        <tr id="urow-3">
+          <td><div class="user-cell"><span>Saleh Al-Harbi</span><span>saleh@example.com</span></div></td>
+          <td>Farmer</td>
+          <td><span class="pill suspended" id="ustatus-3">Suspended</span></td>
+          <td><div class="action-btns">
+            <button class="icon-btn restore" onclick="reactivateUser('urow-3','ustatus-3','Saleh Al-Harbi')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+              Reactivate
+            </button>
+          </div></td>
+        </tr>
+        <tr id="urow-4">
+          <td><div class="user-cell"><span>Deema Al-Qahtani</span><span>deema@example.com</span></div></td>
+          <td>Equipment Owner</td>
+          <td><span class="pill active" id="ustatus-4">Active</span></td>
+          <td><div class="action-btns">
+            <button class="icon-btn danger" onclick="openModal('suspend-modal','urow-4','ustatus-4','Deema Al-Qahtani')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
+              Suspend
+            </button>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- Suspend Modal -->
+<div class="modal-overlay" id="suspend-modal">
+  <div class="modal">
+    <div class="modal-icon danger"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#c0392b" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="#c0392b" stroke-width="2"/></svg></div>
+    <h3>Suspend Account?</h3>
+    <p>You are about to suspend <strong id="modal-user-name"></strong>. They will not be able to log in. This action is recorded in the system.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('suspend-modal')">Cancel</button>
+      <button class="btn-confirm danger" onclick="confirmSuspend()">Yes, Suspend</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
+
+<script>
+  let pendingRowId = null, pendingStatusId = null;
+
+  function filterTable(tbodyId, query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('#' + tbodyId + ' tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function openModal(modalId, rowId, statusId, name) {
+    pendingRowId = rowId; pendingStatusId = statusId;
+    document.getElementById('modal-user-name').textContent = name;
+    document.getElementById(modalId).classList.add('open');
+  }
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('open');
+    pendingRowId = pendingStatusId = null;
+  }
+
+  function confirmSuspend() {
+    document.getElementById(pendingStatusId).className = 'pill suspended';
+    document.getElementById(pendingStatusId).textContent = 'Suspended';
+    document.querySelector('#' + pendingRowId + ' .action-btns').innerHTML =
+      `<button class="icon-btn restore" onclick="reactivateUser('${pendingRowId}','${pendingStatusId}','User')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+        Reactivate</button>`;
+    closeModal('suspend-modal');
+    showToast('Account suspended — action recorded.');
+  }
+
+  function reactivateUser(rowId, statusId, name) {
+    document.getElementById(statusId).className = 'pill active';
+    document.getElementById(statusId).textContent = 'Active';
+    document.querySelector('#' + rowId + ' .action-btns').innerHTML =
+      `<button class="icon-btn danger" onclick="openModal('suspend-modal','${rowId}','${statusId}','${name}')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
+        Suspend</button>`;
+    showToast('Account reactivated successfully.');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
+</script>
+</body>
+</html>

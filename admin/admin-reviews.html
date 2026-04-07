@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenRent – Reviews & Ratings</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="adminStyle.css" rel="stylesheet"/>
+  <style>
+    .stars     { color: #e8b500; font-size: 13px; letter-spacing: 1px; }
+    .stars-low { color: #c0392b; font-size: 13px; letter-spacing: 1px; }
+
+    .pill.flagged { background: rgba(220,60,60,.10); color: #c0392b; }
+    .row-flagged td { background: rgba(220,60,60,.03); }
+
+    .comment-cell {
+      max-width: 340px;
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Summary — only 2 chips */
+    .summary-strip {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .summary-chip {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.12);
+      border-radius: 12px;
+      padding: 18px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .summary-chip .num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      line-height: 1;
+      color: var(--green-deep);
+    }
+    .summary-chip .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Sort buttons only — no search wrapper needed */
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .sort-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .sort-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: 8px;
+      border: 1.5px solid transparent; background: transparent;
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; transition: all .15s;
+    }
+    .sort-btn:hover { background: var(--green-pale); color: var(--green-mid); }
+    .sort-btn.active { background: var(--green-pale); color: var(--green-mid); border-color: rgba(82,183,136,.35); }
+  </style>
+</head>
+<body>
+
+<header class="admin-header">
+  <div class="admin-header-inner">
+    <div style="display:flex;align-items:center;flex-shrink:0;">
+      <a href="admin-dashboard.html" class="admin-logo">
+        <img src="logo.jpg" alt="GreenRent Logo"/>
+        <div class="admin-logo-text"><span>GreenRent</span><span>Agricultural Equipment</span></div>
+      </a>
+    </div>
+
+    <ul class="admin-nav">
+      <li><a href="admin-dashboard.html">Dashboard</a></li>
+      <li><a href="admin-users.html">User Accounts</a></li>
+      <li><a href="admin-listings.html">Equipment Listings</a></li>
+      <li><a href="admin-reviews.html" class="active">Reviews & Ratings</a></li>
+    </ul>
+
+    <div class="admin-header-right">
+      <div class="admin-profile">
+        <div class="admin-avatar">A</div>
+        <span class="admin-profile-name">Admin</span>
+      </div>
+      <div class="admin-divider"></div>
+      <a href="login.html" class="btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Log Out
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <div class="page-title-row">
+    <div>
+      <h1>Reviews &amp; Ratings</h1>
+    </div>
+  </div>
+
+  <!-- 2 summary chips only -->
+  <div class="summary-strip">
+    <div class="summary-chip">
+      <div class="num">4</div>
+      <div class="lbl">Total Reviews</div>
+    </div>
+    <div class="summary-chip">
+      <div class="num">3.9</div>
+      <div class="lbl">Platform Avg. Rating</div>
+    </div>
+  </div>
+
+  <!-- Table card -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div><h2>All Reviews</h2></div>
+
+      <!-- Sort only -->
+      <div class="sort-bar">
+        <span class="sort-label">Sort by rating:</span>
+        <button class="sort-btn" id="sort-asc" onclick="sortByRating('asc')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Lowest
+        </button>
+        <button class="sort-btn" id="sort-desc" onclick="sortByRating('desc')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Highest
+        </button>
+      </div>
+    </div>
+
+    <table class="full-table">
+      <thead>
+        <tr>
+          <th>Reviewer</th>
+          <th>Equipment</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="reviews-tbody">
+
+        <tr class="row-flagged" data-rating="1">
+          <td><div class="user-cell"><span>Ali Al-Otaibi</span><span>ali@example.com</span></div></td>
+          <td>Irrigation System – Drip</td>
+          <td><span class="stars-low">★☆☆☆☆</span> 1</td>
+          <td><div class="comment-cell">"The machine was broken on arrival and the owner was unresponsive."</div></td>
+          <td>14 Mar 2026</td>
+          <td><span class="pill flagged">⚠ Flagged</span></td>
+        </tr>
+
+        <tr class="row-flagged" data-rating="2">
+          <td><div class="user-cell"><span>Saleh Al-Harbi</span><span>saleh@example.com</span></div></td>
+          <td>Seed Drill – Amazone</td>
+          <td><span class="stars-low">★★☆☆☆</span> 2</td>
+          <td><div class="comment-cell">"Owner did not show up at the agreed time. Equipment arrived 2 days late."</div></td>
+          <td>22 Feb 2026</td>
+          <td><span class="pill flagged">⚠ Flagged</span></td>
+        </tr>
+
+        <tr data-rating="4">
+          <td><div class="user-cell"><span>Deema Al-Qahtani</span><span>deema@example.com</span></div></td>
+          <td>Harvester – Claas Lexion</td>
+          <td><span class="stars">★★★★☆</span> 4</td>
+          <td><div class="comment-cell">"Good harvester, works well. Minor issue with fuel consumption but overall satisfied."</div></td>
+          <td>10 Mar 2026</td>
+          <td><span class="pill active">Normal</span></td>
+        </tr>
+
+        <tr data-rating="5">
+          <td><div class="user-cell"><span>Mohammed Salem</span><span>msalem@example.com</span></div></td>
+          <td>Tractor – John Deere 6M</td>
+          <td><span class="stars">★★★★★</span> 5</td>
+          <td><div class="comment-cell">"Excellent tractor, well maintained and delivered on time. Highly recommend."</div></td>
+          <td>5 Mar 2026</td>
+          <td><span class="pill active">Normal</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+  let currentSort = null;
+
+  function sortByRating(direction) {
+    const tbody = document.getElementById('reviews-tbody');
+    const rows  = Array.from(tbody.querySelectorAll('tr'));
+
+    if (currentSort === direction) {
+      currentSort = null;
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      rows.sort((a, b) => parseFloat(a.dataset.rating) - parseFloat(b.dataset.rating));
+      rows.forEach(r => tbody.appendChild(r));
+      return;
+    }
+
+    currentSort = direction;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sort-' + direction).classList.add('active');
+
+    rows.sort((a, b) => {
+      const ar = parseFloat(a.dataset.rating);
+      const br = parseFloat(b.dataset.rating);
+      return direction === 'asc' ? ar - br : br - ar;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+</script>
+
+</body>
+</html>
