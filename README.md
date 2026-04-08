@@ -29,8 +29,6 @@ It connects equipment owners with renters, making the process of finding, listin
 - HTML  
 - CSS  
 - JavaScript  
-- PHP
-- SQL
 ---
 
 ## Team Members
