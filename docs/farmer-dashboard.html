@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Dashboard — GreenRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <link href="pages.css" rel="stylesheet"/>
+  <style>
+    /* ── Dashboard-specific styles ── */
+    .dash-hero {
+      background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 55%, #3a8a5f 100%);
+      padding: 40px 0 50px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dash-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      pointer-events: none;
+    }
+    .dash-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 5%;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.03);
+      pointer-events: none;
+    }
+    .dash-hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .dash-hero-left .greeting {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,.85);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .dash-hero-left h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .dash-hero-left p {
+      font-size: 14.5px;
+      color: rgba(255,255,255,.68);
+      max-width: 420px;
+      line-height: 1.65;
+    }
+    .dash-stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px;
+      padding: 12px 18px;
+      text-align: center;
+    }
+    .stat-pill .val {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: white;
+    }
+    .stat-pill .lbl {
+      font-size: 11px;
+      color: rgba(255,255,255,.60);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-top: 2px;
+    }
+
+    /* ── Search + Filter bar ── */
+    .filter-bar-wrap {
+      background: var(--white);
+      border-bottom: 1px solid rgba(82,183,136,.15);
+      box-shadow: 0 2px 12px rgba(26,60,43,.07);
+      position: sticky;
+      top: 68px;
+      z-index: 50;
+    }
+    .filter-bar {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-search {
+      flex: 1;
+      min-width: 220px;
+      max-width: 360px;
+      position: relative;
+    }
+    .filter-search input {
+      width: 100%;
+      padding: 10px 16px 10px 42px;
+      border: 1.5px solid rgba(82,183,136,.28);
+      border-radius: 10px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .filter-search input::placeholder { color: var(--text-muted); }
+    .filter-search input:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(82,183,136,.13);
+    }
+    .filter-search-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid rgba(82,183,136,.28);
+      border-radius: 10px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      color: var(--text-dark);
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .filter-select:focus { border-color: var(--green-light); }
+    .filter-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .filter-result-count {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Equipment grid ── */
+    .section-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 32px 0;
+    }
+    .equip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 22px;
+    }
+
+    /* ── My Reservations bar ── */
+    .reservations-bar {
+      max-width: 1200px;
+      margin: 36px auto 0;
+      padding: 0 32px;
+    }
+    .reservations-card {
+      background: linear-gradient(135deg, #eef5ee 0%, var(--green-pale) 100%);
+      border: 1px solid rgba(82,183,136,.25);
+      border-radius: var(--radius);
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .reservations-icon {
+      width: 50px; height: 50px;
+      border-radius: 12px;
+      background: var(--green-mid);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .reservations-icon svg { color: white; }
+    .reservations-info h3 {
+      font-weight: 700;
+      font-size: 15.5px;
+      color: var(--green-deep);
+    }
+    .reservations-info p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .reservations-items {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+      align-items: center;
+    }
+    .res-mini {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.20);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+    }
+    .res-mini .name { font-weight: 600; color: var(--text-dark); }
+    .res-mini .dates { color: var(--text-muted); margin-top: 2px; }
+
+    /* ── No results ── */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      display: none;
+    }
+    .no-results svg { margin-bottom: 14px; opacity: .35; }
+    .no-results p { font-size: 15px; }
+    .footer-logo-wrap img,
+.footer-logo img {
+  height: 48px;
+  width: auto;
+}
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="gr-header">
+  <nav class="gr-nav">
+   <a href="farmer-dashboard.html" class="gr-logo">
+  <img src="logo.png" alt="GreenRent Logo" />
+  <div class="gr-logo-text">
+    <span>GreenRent</span>
+    <span>Agricultural Equipment</span>
+  </div>
+</a>
+
+    <ul class="gr-navlinks">
+      <li><a href="farmer-dashboard.html" class="active">Farmer Dashboard</a></li>
+      <li><a href="my-reservations.html">My Reservations</a></li>
+      <li><a href="farmer-profile.html">Profile</a></li>
+      <li><a href="login.html">Logout</a></li>
+    </ul>
+
+    <div class="gr-search">
+      <svg class="gr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/>
+      </svg>
+      <input type="text" placeholder="Search equipment…"/>
+    </div>
+
+    <div class="gr-nav-actions">
+      <div class="farmer-badge">
+        <div class="avatar">AH</div>
+        Ahmed H.
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="dash-hero">
+  <div class="dash-hero-inner">
+    <div class="dash-hero-left">
+      <div class="greeting">🌾 Farmer Dashboard</div>
+      <h1>Good morning, Ahmed!</h1>
+      <p>Discover verified agricultural equipment near you. Search, compare, and reserve with confidence.</p>
+    </div>
+    <div class="dash-stats">
+      <div class="stat-pill">
+        <div class="val">42</div>
+        <div class="lbl">Available Now</div>
+      </div>
+      <div class="stat-pill">
+        <div class="val">3</div>
+        <div class="lbl">My Reservations</div>
+      </div>
+      <div class="stat-pill">
+        <div class="val">4.8★</div>
+        <div class="lbl">Avg Rating</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ MY RESERVATIONS QUICK-BAR ══════════════ -->
+<div class="reservations-bar">
+  <div class="reservations-card">
+    <div class="reservations-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </div>
+    <div class="reservations-info">
+      <h3>Active Reservations</h3>
+      <p>Track your ongoing equipment rentals</p>
+    </div>
+    <div class="reservations-items">
+      <div class="res-mini">
+        <div class="name">John Deere Tractor</div>
+        <div class="dates">Apr 10 – Apr 14</div>
+      </div>
+      <div class="res-mini">
+        <div class="name">Irrigation System</div>
+        <div class="dates">Apr 16 – Apr 20</div>
+      </div>
+      <a href="#" class="btn btn-outline btn-sm">View All</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FILTER BAR ══════════════ -->
+<div class="filter-bar-wrap" style="top:68px;">
+  <div class="filter-bar">
+    <div class="filter-search">
+      <svg class="filter-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search tractors, harvesters, seeders…"/>
+    </div>
+
+    <span class="filter-label">Type:</span>
+    <select class="filter-select" id="typeFilter">
+      <option value="">All Types</option>
+      <option value="Tractor">Tractor</option>
+      <option value="Harvester">Harvester</option>
+      <option value="Irrigation">Irrigation</option>
+      <option value="Seeder">Seeder</option>
+      <option value="Plow">Plow</option>
+    </select>
+
+    <span class="filter-label">Location:</span>
+    <select class="filter-select" id="locationFilter">
+      <option value="">All Locations</option>
+      <option value="Riyadh">Riyadh</option>
+      <option value="Al Kharj">Al Kharj</option>
+      <option value="Diriyah">Diriyah</option>
+      <option value="Al Muzahimiyah">Al Muzahimiyah</option>
+    </select>
+
+    <span class="filter-label">Price:</span>
+    <select class="filter-select" id="priceFilter">
+      <option value="">Any Price</option>
+      <option value="low">Under SAR 200/day</option>
+      <option value="mid">SAR 200–500/day</option>
+      <option value="high">Above SAR 500/day</option>
+    </select>
+
+    <span class="filter-label">Availability:</span>
+    <select class="filter-select" id="availFilter">
+      <option value="">All</option>
+      <option value="available">Available Now</option>
+      <option value="limited">Limited</option>
+    </select>
+
+    <span class="filter-result-count" id="resultCount">Showing 8 results</span>
+  </div>
+</div>
+
+<!-- ══════════════ EQUIPMENT LISTING ══════════════ -->
+<section class="section-wrap">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Available Equipment</div>
+      <div class="section-sub">Verified, quality-checked, ready for your farm</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="font-size:13px;color:var(--text-muted);">Sort by:</span>
+      <select class="filter-select" id="sortFilter" style="padding:8px 12px;">
+        <option>Recommended</option>
+        <option>Price: Low to High</option>
+        <option>Price: High to Low</option>
+        <option>Rating</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="equip-grid" id="equipGrid">
+
+    <!-- Card 1 -->
+    <div class="equip-card" data-type="Tractor" data-location="Riyadh" data-price="350" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="10" width="14" height="8" rx="2"/><circle cx="6" cy="18" r="2"/><circle cx="14" cy="18" r="2"/><path d="M16 12h4l2 4H16"/><circle cx="20" cy="18" r="2"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.9</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">John Deere 6M Series Tractor</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Tractor</span>
+          <span class="meta-tag">🌍 Riyadh</span>
+          <span class="meta-tag">Excellent Condition</span>
+        </div>
+        <div class="equip-card-desc">140HP diesel tractor with GPS-assisted driving. Suitable for large-scale plowing, planting, and crop management across wide field areas.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 350</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="equip-card" data-type="Harvester" data-location="Al Kharj" data-price="620" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 20h16M4 20V8l8-4 8 4v12"/><rect x="9" y="13" width="6" height="7"/><path d="M9 13V9h6v4"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.7</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">Claas Lexion 8900 Harvester</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Harvester</span>
+          <span class="meta-tag">🌍 Al Kharj</span>
+          <span class="meta-tag">Good Condition</span>
+        </div>
+        <div class="equip-card-desc">High-capacity grain harvester with advanced threshing system. Perfect for wheat, barley, and sorghum harvesting in Riyadh region farms.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 620</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="equip-card" data-type="Irrigation" data-location="Diriyah" data-price="180" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2v4M6.34 6.34l2.83 2.83M2 12h4M6.34 17.66l2.83-2.83M12 22v-4M17.66 17.66l-2.83-2.83M22 12h-4M17.66 6.34l-2.83 2.83"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.8</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">Center Pivot Irrigation System</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Irrigation</span>
+          <span class="meta-tag">🌍 Diriyah</span>
+          <span class="meta-tag">Excellent Condition</span>
+        </div>
+        <div class="equip-card-desc">Automated center pivot irrigation covering up to 100 acres. Features precision water distribution with mobile app control and scheduling.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 180</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="equip-card" data-type="Seeder" data-location="Riyadh" data-price="150" data-avail="limited">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <span class="badge badge-limited">◐ Limited</span>
+        <span class="rating-pill">⭐ 4.6</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">Precision Air Seeder — 12-Row</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Seeder</span>
+          <span class="meta-tag">🌍 Riyadh</span>
+          <span class="meta-tag">Good Condition</span>
+        </div>
+        <div class="equip-card-desc">12-row air seeder with variable-rate technology. Ideal for planting wheat, alfalfa, and barley with consistent depth and spacing.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 150</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="equip-card" data-type="Plow" data-location="Al Muzahimiyah" data-price="120" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 17l4-8 4 4 4-6 4 10"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.5</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">Disc Plow — Heavy-Duty 5-Blade</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Plow</span>
+          <span class="meta-tag">🌍 Al Muzahimiyah</span>
+          <span class="meta-tag">Good Condition</span>
+        </div>
+        <div class="equip-card-desc">Heavy-duty 5-disc plow for deep tillage. Excellent for breaking hard soil in Riyadh's semi-arid climate. Compatible with 100HP+ tractors.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 120</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="equip-card" data-type="Tractor" data-location="Al Kharj" data-price="280" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="10" width="14" height="8" rx="2"/><circle cx="6" cy="18" r="2"/><circle cx="14" cy="18" r="2"/><path d="M16 12h4l2 4H16"/><circle cx="20" cy="18" r="2"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.8</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">New Holland T7 Series Tractor</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Tractor</span>
+          <span class="meta-tag">🌍 Al Kharj</span>
+          <span class="meta-tag">Excellent Condition</span>
+        </div>
+        <div class="equip-card-desc">110HP fuel-efficient tractor with auto-steer and precision farming ready. Comes with an experienced operator upon request at no extra cost.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 280</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="equip-card" data-type="Irrigation" data-location="Riyadh" data-price="95" data-avail="available">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2v4M6.34 6.34l2.83 2.83M2 12h4M6.34 17.66l2.83-2.83M12 22v-4M17.66 17.66l-2.83-2.83M22 12h-4M17.66 6.34l-2.83 2.83"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="badge badge-available">● Available</span>
+        <span class="rating-pill">⭐ 4.7</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">Drip Irrigation Kit — 5 Acre</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Irrigation</span>
+          <span class="meta-tag">🌍 Riyadh</span>
+          <span class="meta-tag">Good Condition</span>
+        </div>
+        <div class="equip-card-desc">Complete drip irrigation setup for 5-acre farms. Includes pump, mainline, emitters and a timer controller. Low water usage with high crop efficiency.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 95</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="equip-card" data-type="Harvester" data-location="Diriyah" data-price="490" data-avail="limited">
+      <div class="equip-card-img">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 20h16M4 20V8l8-4 8 4v12"/><rect x="9" y="13" width="6" height="7"/><path d="M9 13V9h6v4"/></svg>
+        <span class="badge badge-limited">◐ Limited</span>
+        <span class="rating-pill">⭐ 4.9</span>
+      </div>
+      <div class="equip-card-body">
+        <div class="equip-card-title">AGCO Gleaner S9 Combine Harvester</div>
+        <div class="equip-card-meta">
+          <span class="meta-tag">Harvester</span>
+          <span class="meta-tag">🌍 Diriyah</span>
+          <span class="meta-tag">Excellent Condition</span>
+        </div>
+        <div class="equip-card-desc">Premium combine harvester with 500HP engine and 40-foot header. Equipped with precision yield mapping and moisture sensing. Operator included.</div>
+      </div>
+      <div class="equip-card-footer">
+        <div class="price-tag">
+          <span class="price">SAR 490</span>
+          <span class="per">per day</span>
+        </div>
+        <div class="card-actions">
+          <a href="equipment-details.html" class="btn btn-outline btn-sm">Details</a>
+          <a href="reservation.html" class="btn btn-solid btn-sm">Reserve</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /equip-grid -->
+
+  <div class="no-results" id="noResults">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/></svg>
+    <p>No equipment matches your filters.<br>Try adjusting your search criteria.</p>
+  </div>
+
+  <div style="height:60px;"></div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
+    <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
+  </svg>
+  <div class="footer-main">
+    <div class="footer-logo">
+  <img src="logo.png" alt="GreenRent Logo" />
+</div>
+    <p class="footer-tagline">A trusted platform connecting farmers and equipment owners across Riyadh.</p>
+    <div class="footer-social">
+      <a href="#" aria-label="Twitter">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="footer-badges">
+    <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">© 2026 GreenRent. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  const cards = document.querySelectorAll('.equip-card');
+  const searchInput = document.getElementById('searchInput');
+  const typeFilter = document.getElementById('typeFilter');
+  const locationFilter = document.getElementById('locationFilter');
+  const priceFilter = document.getElementById('priceFilter');
+  const availFilter = document.getElementById('availFilter');
+  const resultCount = document.getElementById('resultCount');
+  const noResults = document.getElementById('noResults');
+
+  function filterCards() {
+    const search = searchInput.value.toLowerCase();
+    const type = typeFilter.value;
+    const location = locationFilter.value;
+    const price = priceFilter.value;
+    const avail = availFilter.value;
+    let count = 0;
+
+    cards.forEach(card => {
+      const title = card.querySelector('.equip-card-title').textContent.toLowerCase();
+      const desc = card.querySelector('.equip-card-desc').textContent.toLowerCase();
+      const cardType = card.dataset.type;
+      const cardLoc = card.dataset.location;
+      const cardPrice = parseInt(card.dataset.price);
+      const cardAvail = card.dataset.avail;
+
+      let show = true;
+      if (search && !title.includes(search) && !desc.includes(search)) show = false;
+      if (type && cardType !== type) show = false;
+      if (location && cardLoc !== location) show = false;
+      if (avail && cardAvail !== avail) show = false;
+      if (price === 'low' && cardPrice >= 200) show = false;
+      if (price === 'mid' && (cardPrice < 200 || cardPrice > 500)) show = false;
+      if (price === 'high' && cardPrice <= 500) show = false;
+
+      card.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+
+    resultCount.textContent = `Showing ${count} result${count !== 1 ? 's' : ''}`;
+    noResults.style.display = count === 0 ? 'block' : 'none';
+  }
+
+  [searchInput, typeFilter, locationFilter, priceFilter, availFilter].forEach(el => {
+    el.addEventListener('input', filterCards);
+    el.addEventListener('change', filterCards);
+  });
+</script>
+</body>
+</html>
