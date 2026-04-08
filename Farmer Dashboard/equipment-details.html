@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Equipment Details Page — GreenRent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <link href="pages.css" rel="stylesheet"/>
+  <style>
+    /* ── Details-page specific ── */
+    .detail-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 32px;
+    }
+
+    /* ── Main layout ── */
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── Left column ── */
+    .detail-main {}
+
+    /* ── Image gallery ── */
+    .detail-gallery {
+      background: linear-gradient(135deg, var(--green-pale) 0%, #b7e4c7 100%);
+      border-radius: var(--radius);
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .detail-gallery svg { color: var(--green-mid); opacity: .3; }
+    .gallery-badge-wrap {
+      position: absolute;
+      top: 16px; left: 16px;
+      display: flex;
+      gap: 8px;
+    }
+    .gallery-actions {
+      position: absolute;
+      bottom: 16px; right: 16px;
+      display: flex;
+      gap: 8px;
+    }
+    .gallery-btn {
+      background: rgba(255,255,255,.88);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--green-mid);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background .18s;
+    }
+    .gallery-btn:hover { background: var(--white); }
+    .gallery-thumbs {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      display: flex;
+      gap: 8px;
+    }
+    .thumb {
+      width: 52px; height: 40px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.55);
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .18s;
+    }
+    .thumb.active { border-color: var(--green-mid); background: rgba(255,255,255,.75); }
+    .thumb svg { color: var(--green-mid); opacity: .7; }
+
+    /* ── Title block ── */
+    .detail-title-block {
+      margin-bottom: 20px;
+    }
+    .detail-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-pale);
+      color: var(--green-mid);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+    .detail-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      color: var(--green-deep);
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .detail-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .detail-rating {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stars-row { display: flex; gap: 2px; }
+    .star { color: var(--gold); font-size: 15px; }
+    .star.empty { color: #ddd; }
+    .rating-val { font-weight: 700; font-size: 15px; }
+    .rating-count { font-size: 13px; color: var(--text-muted); }
+    .detail-location {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    /* ── Info cards row ── */
+    .info-pills {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .info-pill {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.18);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 120px;
+      box-shadow: var(--shadow-sm);
+    }
+    .info-pill .pill-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-muted);
+    }
+    .info-pill .pill-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+    .info-pill .pill-val.green { color: var(--green-mid); }
+
+    /* ── Tabs ── */
+    .detail-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid rgba(82,183,136,.15);
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: color .18s;
+    }
+    .tab-btn.active { color: var(--green-mid); }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 2px;
+      background: var(--green-mid);
+      border-radius: 2px 2px 0 0;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Description ── */
+    .detail-desc {
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    /* ── Specs grid ── */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .spec-row {
+      background: var(--cream);
+      border: 1px solid rgba(82,183,136,.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .spec-key {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .spec-val {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    /* ── Features list ── */
+    .features-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      color: var(--text-dark);
+    }
+    .feature-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--green-pale);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--green-mid);
+    }
+
+    /* ── Reviews ── */
+    .review-item {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.14);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .reviewer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .reviewer-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .reviewer-name { font-weight: 600; font-size: 14px; }
+    .reviewer-date { font-size: 12px; color: var(--text-muted); }
+    .review-text { font-size: 13.5px; line-height: 1.65; color: var(--text-dark); }
+
+    /* ── Right sidebar (sticky booking card) ── */
+    .booking-sidebar {
+      position: sticky;
+      top: 88px;
+    }
+
+    .booking-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .booking-card-header {
+      background: linear-gradient(135deg, var(--green-mid), #3a8a5f);
+      padding: 20px 22px;
+    }
+    .booking-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .booking-price {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px;
+      color: white;
+    }
+    .booking-per {
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+    }
+    .booking-avail-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #74e094; flex-shrink: 0; }
+    .avail-text { font-size: 13px; color: rgba(255,255,255,.80); }
+
+    .booking-card-body { padding: 22px; }
+
+    .date-range-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .date-input-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .date-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+
+    .booking-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+      padding: 6px 0;
+      color: var(--text-dark);
+    }
+    .booking-line .key { color: var(--text-muted); }
+    .booking-line.total {
+      border-top: 1.5px solid rgba(82,183,136,.18);
+      margin-top: 8px;
+      padding-top: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--green-deep);
+    }
+
+    .booking-cta {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .booking-cta .btn { justify-content: center; width: 100%; }
+
+    .trust-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Owner card */
+    .owner-card {
+      background: var(--white);
+      border: 1px solid rgba(82,183,136,.18);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .owner-card-title {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .owner-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .owner-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .owner-name { font-weight: 700; font-size: 15px; }
+    .owner-since { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .owner-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .owner-stat {
+      background: var(--cream);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      flex: 1;
+    }
+    .owner-stat .val { font-weight: 700; font-size: 14px; color: var(--green-mid); }
+    .owner-stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Rental terms */
+    .terms-card {
+      background: var(--cream);
+      border: 1px solid rgba(82,183,136,.18);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+    .terms-card-title {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .term-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .term-icon { color: var(--green-mid); margin-top: 1px; flex-shrink: 0; }
+
+    @media (max-width: 900px) {
+      .detail-layout { grid-template-columns: 1fr; }
+      .booking-sidebar { position: static; }
+      .specs-grid, .features-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="gr-header">
+  <nav class="gr-nav">
+    <a href="farmer-dashboard.html" class="gr-logo">
+      <div class="gr-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <div class="gr-logo-text">
+        <span>GreenRent</span>
+        <span>Agricultural Equipment</span>
+      </div>
+    </a>
+    <ul class="gr-navlinks">
+      <li><a href="farmer-dashboard.html">Farmer Dashboard</a></li>
+      <li><a href="#">My Reservations</a></li>
+      <li><a href="#">Profile</a></li>
+      <li><a href="#">Logout</a></li>
+    </ul>
+    <div class="gr-search">
+      <svg class="gr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/>
+      </svg>
+      <input type="text" placeholder="Search equipment…"/>
+    </div>
+    <div class="gr-nav-actions">
+      <div class="farmer-badge">
+        <div class="avatar">AH</div>
+        Ahmed H.
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ══════════════ PAGE BODY ══════════════ -->
+<div class="detail-wrap">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="farmer-dashboard.html">Farmer Dashboard</a>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>Equipment Details Page</span>
+  </div>
+
+  <div class="detail-layout">
+
+    <!-- ────── LEFT COLUMN ────── -->
+    <div class="detail-main">
+
+      <!-- Gallery -->
+      <div class="detail-gallery">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="2" y="10" width="14" height="8" rx="2"/><circle cx="6" cy="18" r="2"/><circle cx="14" cy="18" r="2"/><path d="M16 12h4l2 4H16"/><circle cx="20" cy="18" r="2"/>
+        </svg>
+        <div class="gallery-badge-wrap">
+          <span class="badge badge-available">● Available Now</span>
+          <span class="badge" style="background:rgba(255,255,255,.85);color:var(--green-deep);">✓ Verified</span>
+        </div>
+        <div class="gallery-thumbs">
+          <div class="thumb active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="10" width="14" height="8" rx="2"/></svg>
+          </div>
+          <div class="thumb">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/></svg>
+          </div>
+          <div class="thumb">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17l4-8 4 4 4-6 4 10"/></svg>
+          </div>
+        </div>
+        <div class="gallery-actions">
+          <button class="gallery-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            Full Screen
+          </button>
+        </div>
+      </div>
+
+      <!-- Title block -->
+      <div class="detail-title-block">
+        <div class="detail-category">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="10" width="14" height="8" rx="2"/></svg>
+          Tractor
+        </div>
+        <h1 class="detail-title">John Deere 6M Series Tractor</h1>
+        <div class="detail-meta-row">
+          <div class="detail-rating">
+            <div class="stars-row">
+              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+            <span class="rating-val">4.9</span>
+            <span class="rating-count">(47 reviews)</span>
+          </div>
+          <div class="detail-location">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Riyadh, Saudi Arabia
+          </div>
+          <span class="badge badge-available">● Available Now</span>
+        </div>
+      </div>
+
+      <!-- Info pills -->
+      <div class="info-pills">
+        <div class="info-pill">
+          <span class="pill-label">Condition</span>
+          <span class="pill-val">Excellent</span>
+        </div>
+        <div class="info-pill">
+          <span class="pill-label">Engine Power</span>
+          <span class="pill-val">140 HP</span>
+        </div>
+        <div class="info-pill">
+          <span class="pill-label">Year</span>
+          <span class="pill-val">2022</span>
+        </div>
+        <div class="info-pill">
+          <span class="pill-label">Operator</span>
+          <span class="pill-val green">Included</span>
+        </div>
+        <div class="info-pill">
+          <span class="pill-label">Min. Days</span>
+          <span class="pill-val">2 days</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="detail-tabs">
+        <button class="tab-btn active" data-tab="description">Description</button>
+        <button class="tab-btn" data-tab="specs">Specifications</button>
+        <button class="tab-btn" data-tab="features">Features</button>
+        <button class="tab-btn" data-tab="reviews">Reviews (47)</button>
+      </div>
+
+      <!-- Tab: Description -->
+      <div class="tab-panel active" id="tab-description">
+        <p class="detail-desc">
+          The John Deere 6M Series Tractor is a high-performance agricultural workhorse designed for precision farming across large Saudi fields. Powered by a robust 140HP diesel engine, this tractor offers exceptional pulling force for plowing, planting, and hauling operations in Riyadh's diverse terrain.
+        </p>
+        <p class="detail-desc">
+          Equipped with John Deere's AutoTrac GPS guidance system, this unit ensures straight, consistent passes with centimeter-level accuracy — reducing overlap and saving fuel. The CommandView III cab offers premium operator comfort with air conditioning, adjustable seating, and a full-color touchscreen display for farm management.
+        </p>
+        <p class="detail-desc">
+          This unit is ideal for farmers managing wheat, alfalfa, or date palm operations across 50–500 acre plots. An experienced, certified operator is included in the daily rental price. Fuel is not included and will be billed separately at actual cost.
+        </p>
+      </div>
+
+      <!-- Tab: Specs -->
+      <div class="tab-panel" id="tab-specs">
+        <div class="specs-grid">
+          <div class="spec-row"><span class="spec-key">Engine Type</span><span class="spec-val">John Deere 4.5L Diesel</span></div>
+          <div class="spec-row"><span class="spec-key">Horsepower</span><span class="spec-val">140 HP</span></div>
+          <div class="spec-row"><span class="spec-key">Transmission</span><span class="spec-val">AutoQuad Plus (20F/20R)</span></div>
+          <div class="spec-row"><span class="spec-key">PTO Power</span><span class="spec-val">117 HP</span></div>
+          <div class="spec-row"><span class="spec-key">Rear Lift Capacity</span><span class="spec-val">7,730 kg</span></div>
+          <div class="spec-row"><span class="spec-key">Fuel Tank</span><span class="spec-val">242 L</span></div>
+          <div class="spec-row"><span class="spec-key">Wheelbase</span><span class="spec-val">2,650 mm</span></div>
+          <div class="spec-row"><span class="spec-key">Drive Type</span><span class="spec-val">4WD</span></div>
+          <div class="spec-row"><span class="spec-key">Weight</span><span class="spec-val">6,200 kg</span></div>
+          <div class="spec-row"><span class="spec-key">Year of Manufacture</span><span class="spec-val">2022</span></div>
+        </div>
+      </div>
+
+      <!-- Tab: Features -->
+      <div class="tab-panel" id="tab-features">
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            GPS AutoTrac Guidance System
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Air-conditioned CommandView III Cab
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            4WD with Mechanical Front-Wheel Drive
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Full-Color 10" GreenStar Display
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Front & Rear Power Take-Off (PTO)
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Hydraulic Trailer Brakes
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Premium Suspension Seating
+          </div>
+          <div class="feature-item">
+            <div class="feature-check">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            Certified Operator Included
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Reviews -->
+      <div class="tab-panel" id="tab-reviews">
+        <div style="background:var(--cream);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;">
+          <div style="text-align:center;">
+            <div style="font-family:'DM Serif Display',serif;font-size:52px;color:var(--green-deep);line-height:1;">4.9</div>
+            <div class="stars-row" style="justify-content:center;gap:3px;margin:4px 0;">
+              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-muted);">47 reviews</div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+                <span style="width:40px;color:var(--text-muted);">5 ★</span>
+                <div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:80%;height:100%;background:var(--gold);border-radius:3px;"></div></div>
+                <span style="width:30px;color:var(--text-muted);">38</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+                <span style="width:40px;color:var(--text-muted);">4 ★</span>
+                <div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:15%;height:100%;background:var(--gold);border-radius:3px;"></div></div>
+                <span style="width:30px;color:var(--text-muted);">7</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+                <span style="width:40px;color:var(--text-muted);">3 ★</span>
+                <div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:4%;height:100%;background:var(--gold);border-radius:3px;"></div></div>
+                <span style="width:30px;color:var(--text-muted);">2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-item">
+          <div class="review-header">
+            <div class="reviewer">
+              <div class="reviewer-avatar">KA</div>
+              <div>
+                <div class="reviewer-name">Khalid Al-Rashidi</div>
+                <div class="reviewer-date">March 2026 · Al Kharj Farm</div>
+              </div>
+            </div>
+            <div style="color:var(--gold);font-size:13px;">★★★★★</div>
+          </div>
+          <p class="review-text">Excellent tractor, arrived on time and the operator was very professional. Plowed 80 acres in two days. The GPS guidance system is remarkable — perfectly straight rows. Will rent again for next season without hesitation.</p>
+        </div>
+
+        <div class="review-item">
+          <div class="review-header">
+            <div class="reviewer">
+              <div class="reviewer-avatar" style="background:linear-gradient(135deg,#6a3d2d,#a0522d);">FM</div>
+              <div>
+                <div class="reviewer-name">Fahad Al-Mutairi</div>
+                <div class="reviewer-date">February 2026 · Diriyah Farm</div>
+              </div>
+            </div>
+            <div style="color:var(--gold);font-size:13px;">★★★★★</div>
+          </div>
+          <p class="review-text">Used this for wheat planting in February. The equipment was in perfect condition and the GreenRent team handled logistics seamlessly. Communication was transparent throughout the rental period.</p>
+        </div>
+
+        <div class="review-item">
+          <div class="review-header">
+            <div class="reviewer">
+              <div class="reviewer-avatar" style="background:linear-gradient(135deg,#2d4f6a,#3a8a5f);">SA</div>
+              <div>
+                <div class="reviewer-name">Saleh Al-Otaibi</div>
+                <div class="reviewer-date">January 2026 · Riyadh Farm</div>
+              </div>
+            </div>
+            <div style="color:var(--gold);font-size:13px;">★★★★<span style="color:#ddd;">★</span></div>
+          </div>
+          <p class="review-text">Good tractor, performed well during our alfalfa land preparation. Minor delay in delivery of one hour but was resolved quickly. Operator was knowledgeable and helpful. Overall satisfied.</p>
+        </div>
+      </div>
+
+    </div><!-- /detail-main -->
+
+    <!-- ────── RIGHT SIDEBAR ────── -->
+    <div class="booking-sidebar">
+
+      <!-- Booking card -->
+      <div class="booking-card">
+        <div class="booking-card-header">
+          <div class="booking-price-row">
+            <span class="booking-price">SAR 350</span>
+            <span class="booking-per">/ day</span>
+          </div>
+          <div class="booking-avail-row">
+            <div class="avail-dot"></div>
+            <span class="avail-text">Available — Book instantly</span>
+          </div>
+        </div>
+        <div class="booking-card-body">
+          <div class="date-range-row">
+            <div class="date-input-wrap">
+              <label class="date-label">Start Date</label>
+              <input type="date" class="form-control" id="sidebarStart"/>
+            </div>
+            <div class="date-input-wrap">
+              <label class="date-label">End Date</label>
+              <input type="date" class="form-control" id="sidebarEnd"/>
+            </div>
+          </div>
+          <div class="booking-line">
+            <span class="key">SAR 350 × <span id="sidebar-days">3</span> days</span>
+            <span id="sidebar-subtotal">SAR 1,050</span>
+          </div>
+          <div class="booking-line">
+            <span class="key">Service fee</span>
+            <span>SAR 85</span>
+          </div>
+          <div class="booking-line total">
+            <span>Total</span>
+            <span id="sidebar-total">SAR 1,135</span>
+          </div>
+          <div class="booking-cta">
+            <a href="reservation.html" class="btn btn-solid btn-lg">Reserve Now</a>
+            <a href="farmer-dashboard.html" class="btn btn-outline">← Back to Dashboard</a>
+          </div>
+          <div class="trust-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Secure checkout · Free cancellation 48h before
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner card -->
+      <div class="owner-card">
+        <div class="owner-card-title">Equipment Owner</div>
+        <div class="owner-info">
+          <div class="owner-avatar">MN</div>
+          <div>
+            <div class="owner-name">Mohammed Al-Nasser</div>
+            <div class="owner-since">Member since 2023 · Riyadh</div>
+          </div>
+        </div>
+        <div class="owner-stats">
+          <div class="owner-stat">
+            <div class="val">4.9★</div>
+            <div class="lbl">Rating</div>
+          </div>
+          <div class="owner-stat">
+            <div class="val">143</div>
+            <div class="lbl">Rentals</div>
+          </div>
+          <div class="owner-stat">
+            <div class="val">100%</div>
+            <div class="lbl">Response</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rental terms -->
+      <div class="terms-card">
+        <div class="terms-card-title">Rental Terms</div>
+        <div class="term-item">
+          <svg class="term-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Minimum rental period: 2 days
+        </div>
+        <div class="term-item">
+          <svg class="term-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Free cancellation up to 48 hours before start
+        </div>
+        <div class="term-item">
+          <svg class="term-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Operator included in daily rate — fuel billed separately
+        </div>
+        <div class="term-item">
+          <svg class="term-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Equipment delivered to your farm location in Riyadh
+        </div>
+        <div class="term-item">
+          <svg class="term-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Damage deposit: SAR 500 (fully refundable)
+        </div>
+      </div>
+
+    </div><!-- /booking-sidebar -->
+  </div><!-- /detail-layout -->
+</div><!-- /detail-wrap -->
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
+    <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
+  </svg>
+  <div class="footer-main">
+    <div class="footer-logo-wrap">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div class="footer-brand">GreenRent</div>
+    <p class="footer-tagline">A trusted platform connecting farmers and equipment owners across Riyadh.</p>
+    <div class="footer-social">
+      <a href="#" aria-label="Twitter">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="footer-badges">
+    <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">© 2026 GreenRent. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Sidebar date price calc
+  const startEl = document.getElementById('sidebarStart');
+  const endEl = document.getElementById('sidebarEnd');
+  const daysEl = document.getElementById('sidebar-days');
+  const subtotalEl = document.getElementById('sidebar-subtotal');
+  const totalEl = document.getElementById('sidebar-total');
+  const PRICE = 350;
+  const FEE = 85;
+
+  function calcPrice() {
+    const s = new Date(startEl.value);
+    const e = new Date(endEl.value);
+    if (startEl.value && endEl.value && e > s) {
+      const days = Math.ceil((e - s) / 86400000);
+      const subtotal = days * PRICE;
+      daysEl.textContent = days;
+      subtotalEl.textContent = 'SAR ' + subtotal.toLocaleString();
+      totalEl.textContent = 'SAR ' + (subtotal + FEE).toLocaleString();
+    }
+  }
+  startEl.addEventListener('change', calcPrice);
+  endEl.addEventListener('change', calcPrice);
+
+  // Set default dates
+  const today = new Date();
+  const next3 = new Date(today); next3.setDate(today.getDate() + 3);
+  startEl.value = today.toISOString().split('T')[0];
+  endEl.value = next3.toISOString().split('T')[0];
+  calcPrice();
+</script>
+</body>
+</html>
