@@ -1,0 +1,602 @@
+<?php
+session_start();
+require_once 'db.php';
+$user = getCurrentUser();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenRent — Agricultural Equipment</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep:  #1a3c2b;
+      --green-mid:   #2d6a4f;
+      --green-light: #52b788;
+      --green-pale:  #d8f3dc;
+      --cream:       #faf7f0;
+      --text-dark:   #1a2e1e;
+      --text-muted:  #5a7a62;
+      --white:       #ffffff;
+      --shadow-sm:   0 2px 8px rgba(26,60,43,.10);
+      --shadow-md:   0 6px 24px rgba(26,60,43,.16);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #eef5ee;
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .gr-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid rgba(82,183,136,.20);
+      box-shadow: var(--shadow-sm);
+    }
+    .gr-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+    .gr-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .gr-logo-icon { width: 150px; height: auto; }
+    .gr-logo-text { line-height: 1; }
+    .gr-logo-text span:first-child {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--green-deep);
+      letter-spacing: -.3px;
+    }
+    .gr-logo-text span:last-child {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+    .gr-nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13.5px;
+      border-radius: 10px;
+      padding: 9px 18px;
+      cursor: pointer;
+      border: none;
+      transition: all .18s;
+      text-decoration: none;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--green-mid);
+      color: var(--green-mid);
+    }
+    .btn-outline:hover { background: var(--green-pale); }
+    .btn-solid {
+      background: var(--green-mid);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(45,106,79,.30);
+    }
+    .btn-solid:hover {
+      background: var(--green-deep);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(45,106,79,.35);
+    }
+    .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; }
+    .btn-logout:hover { background: #fef2f2; }
+    .nav-user { font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 32px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-pale);
+      border: 1px solid rgba(82,183,136,.3);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green-mid);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green-light);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 4vw, 54px);
+      color: var(--green-deep);
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -.5px;
+    }
+    .hero h1 em { font-style: italic; color: var(--green-mid); }
+    .hero-desc {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+    .btn-hero { padding: 14px 28px; font-size: 15px; border-radius: 12px; }
+    .hero-stats { display: flex; gap: 32px; }
+    .stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--green-deep);
+      display: block;
+    }
+    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .hero-visual {
+      position: relative;
+      height: 420px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a3c2b 0%, #2d6a4f 40%, #52b788 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+    }
+    .hero-visual-inner { text-align: center; color: white; }
+    .hero-visual-emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.2));
+    }
+    .hero-visual-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      opacity: .9;
+      margin-bottom: 8px;
+    }
+    .hero-visual-sub { font-size: 13px; opacity: .65; letter-spacing: .5px; }
+    .hero-cards {
+      position: absolute;
+      bottom: 20px; left: 16px; right: 16px;
+      display: flex; gap: 8px;
+    }
+    .hero-card-mini {
+      flex: 1;
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+      color: white;
+    }
+    .hero-card-mini-icon { font-size: 20px; display: block; }
+    .hero-card-mini-label { font-size: 10px; opacity: .8; margin-top: 2px; }
+
+    /* ── FEATURES ── */
+    .features-section {
+      background: var(--white);
+      padding: 64px 32px;
+    }
+    .features-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green-light);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      text-align: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 36px;
+      color: var(--green-deep);
+      margin-bottom: 48px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      background: #f8fcf8;
+      border: 1px solid rgba(82,183,136,.15);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: var(--green-pale);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+    .feature-title { font-weight: 700; font-size: 15px; color: var(--green-deep); margin-bottom: 8px; }
+    .feature-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { padding: 64px 32px; max-width: 1200px; margin: 0 auto; }
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+      position: relative;
+    }
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 12%; right: 12%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green-light), var(--green-pale));
+      z-index: 0;
+    }
+    .how-step { text-align: center; position: relative; z-index: 1; }
+    .how-step-num {
+      width: 56px; height: 56px;
+      background: var(--green-mid);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 12px rgba(45,106,79,.3);
+    }
+    .how-step-title { font-weight: 700; font-size: 14px; color: var(--green-deep); margin-bottom: 6px; }
+    .how-step-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section { padding: 80px 32px; text-align: center; max-width: 700px; margin: 0 auto; }
+    .cta-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 40px;
+      color: var(--green-deep);
+      margin-bottom: 16px;
+    }
+    .cta-section p { font-size: 16px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.7; }
+    .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--green-deep); color: rgba(255,255,255,.85); }
+    .footer-wave { display: block; width: 100%; height: 50px; }
+    .footer-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 32px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+    .footer-logo img { height: 48px; width: auto; display: block; border-radius: 10%; }
+    .footer-tagline { font-size: 13.5px; line-height: 1.7; color: rgba(255,255,255,.60); max-width: 480px; }
+    .footer-social { display: flex; gap: 10px; }
+    .footer-social a {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      transition: background .2s, border-color .2s;
+    }
+    .footer-social a:hover { background: var(--green-light); border-color: var(--green-light); color: var(--white); }
+    .footer-badges {
+      border-top: 1px solid rgba(255,255,255,.10);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .f-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      color: rgba(255,255,255,.65);
+    }
+    .f-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.10); }
+    .footer-bottom-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      text-align: center;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.40);
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .how-steps { grid-template-columns: 1fr 1fr; }
+      .how-steps::before { display: none; }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .how-steps { grid-template-columns: 1fr; }
+      .gr-nav { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="gr-header">
+  <nav class="gr-nav">
+    <a class="gr-logo" href="index.php">
+      <img src="logo.png" alt="Logo" class="gr-logo-icon">
+      <div class="gr-logo-text">
+        <span>GreenRent</span>
+        <span>Agricultural Equipment</span>
+      </div>
+    </a>
+    
+    <div class="gr-nav-actions" id="nav-actions">
+      <?php if ($user): ?>
+        <span class="nav-user">👋 <?= htmlspecialchars($user['first_name']) ?></span>
+
+        <?php if ($user['role'] === 'admin'): ?>
+          <a class="btn btn-outline" href="admin-dashboard.php">Dashboard</a>
+        <?php elseif ($user['role'] === 'owner'): ?>
+          <a class="btn btn-outline" href="owner-dashboard.php">Dashboard</a>
+        <?php else: ?>
+          <a class="btn btn-outline" href="farmer-dashboard.php">Dashboard</a>
+        <?php endif; ?>
+
+        <a class="btn btn-logout" href="logout.php">Log Out</a>
+
+      <?php else: ?>
+        <a class="btn btn-outline" href="login.php">Log In</a>
+        <a class="btn btn-solid" href="register.php">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2a5 5 0 105 5 5 5 0 00-5-5zM2 20a10 10 0 0120 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Register
+        </a>
+      <?php endif; ?>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Riyadh — Saudi Arabia
+    </div>
+    <h1>Rent <em>Agricultural</em> Equipment with Confidence</h1>
+    <p class="hero-desc">
+      GreenRent connects farmers with equipment owners across Riyadh. Browse, book, and manage agricultural machinery rentals — all in one trusted platform.
+    </p>
+    <div class="hero-actions">
+      <?php if (!$user): ?>
+        <a class="btn btn-solid btn-hero" href="register.php">Get Started Free</a>
+        <button class="btn btn-outline btn-hero" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Learn More</button>
+      <?php elseif ($user['role'] === 'renter'): ?>
+        <a class="btn btn-solid btn-hero" href="farmer-dashboard.php">Browse Equipment</a>
+        <button class="btn btn-outline btn-hero" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Learn More</button>
+      <?php elseif ($user['role'] === 'owner'): ?>
+        <a class="btn btn-solid btn-hero" href="owner-dashboard.php">My Dashboard</a>
+      <?php else: ?>
+        <a class="btn btn-solid btn-hero" href="admin-dashboard.php">Admin Panel</a>
+      <?php endif; ?>
+    </div>
+    
+    <div class="hero-stats">
+      <?php
+        $eq_count   = $conn->query("SELECT COUNT(*) c FROM equipment WHERE availability_status='available'")->fetch_assoc()['c'];
+        $user_count = $conn->query("SELECT COUNT(*) c FROM users WHERE status='active'")->fetch_assoc()['c'];
+      ?>
+      <div class="stat">
+        <span class="stat-num"><?= $eq_count ?></span>
+        <span class="stat-label">Available Equipment</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num"><?= $user_count ?>+</span>
+        <span class="stat-label">Active Users</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">Secure</span>
+        <span class="stat-label">Payments</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hero-visual">
+    <div class="hero-visual-inner">
+      <span class="hero-visual-emoji">🚜</span>
+      <div class="hero-visual-title">Agricultural Marketplace</div>
+      <div class="hero-visual-sub">CONNECTING FARMERS & OWNERS</div>
+    </div>
+    <div class="hero-cards">
+      <div class="hero-card-mini">
+        <span class="hero-card-mini-icon">🌾</span>
+        <div class="hero-card-mini-label">Tractors</div>
+      </div>
+      <div class="hero-card-mini">
+        <span class="hero-card-mini-icon">💧</span>
+        <div class="hero-card-mini-label">Irrigation</div>
+      </div>
+      <div class="hero-card-mini">
+        <span class="hero-card-mini-icon">🌿</span>
+        <div class="hero-card-mini-label">Harvesters</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <div class="section-label">Why GreenRent</div>
+    <h2 class="section-title">Everything You Need in One Platform</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">Smart Search & Filters</div>
+        <p class="feature-desc">Find equipment by type, price range, and location. Get results in under 3 seconds.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title">Easy Reservations</div>
+        <p class="feature-desc">Select start and end dates, confirm your booking, and receive instant confirmation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <div class="feature-title">Ratings & Reviews</div>
+        <p class="feature-desc">Build trust through a transparent peer-to-peer review system after each rental.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <div class="feature-title">Secure Payments</div>
+        <p class="feature-desc">Online payments and bank transfers with full transaction records for both parties.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✅</div>
+        <div class="feature-title">Verified Accounts</div>
+        <p class="feature-desc">All users are verified to ensure accountability and protect equipment owners.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">Admin Oversight</div>
+        <p class="feature-desc">Dedicated admin manages listings, reviews, and user accounts for platform integrity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how-section">
+  <div class="section-label">Simple Process</div>
+  <h2 class="section-title">How GreenRent Works</h2>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-step-num">1</div>
+      <div class="how-step-title">Register</div>
+      <p class="how-step-desc">Create your account as a Farmer, Equipment Owner, or both.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">2</div>
+      <div class="how-step-title">Browse</div>
+      <p class="how-step-desc">Search and filter equipment by type, price, and location in Riyadh.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">3</div>
+      <div class="how-step-title">Reserve</div>
+      <p class="how-step-desc">Pick your dates, confirm the booking, and pay securely online.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">4</div>
+      <div class="how-step-title">Review</div>
+      <p class="how-step-desc">Share your experience to help the community grow and improve.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Ready to Get Started?</h2>
+  <p>Join farmers and equipment owners across Riyadh on the most trusted agricultural equipment rental platform in Saudi Arabia.</p>
+  <div class="cta-actions">
+    <?php if (!$user): ?>
+      <a class="btn btn-solid btn-hero" href="register.php">Create Free Account</a>
+      <a class="btn btn-outline btn-hero" href="login.php">Sign In</a>
+    <?php elseif ($user['role'] === 'renter'): ?>
+      <a class="btn btn-solid btn-hero" href="farmer-dashboard.php">Browse Equipment</a>
+    <?php elseif ($user['role'] === 'owner'): ?>
+      <a class="btn btn-solid btn-hero" href="owner-dashboard.php">Manage Equipment</a>
+    <?php else: ?>
+      <a class="btn btn-solid btn-hero" href="admin-dashboard.php">Admin Dashboard</a>
+    <?php endif; ?>
+  </div>
+</section>
+
+<footer>
+  <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
+    <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
+  </svg>
+  <div class="footer-main">
+    <div class="footer-logo">
+      <img src="logo.png" alt="GreenRent Logo" />
+    </div>
+    <p class="footer-tagline">A trusted platform connecting farmers and equipment owners across Riyadh.</p>
+    <div class="footer-social">
+      <a href="#" aria-label="Twitter">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="footer-badges">
+    <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">© 2026 GreenRent. All rights reserved.</div>
+  </div>
+</footer>
+
+</body>
+</html>
