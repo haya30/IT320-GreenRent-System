@@ -445,8 +445,8 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
             <span class="per">per day</span>
           </div>
           <div class="card-actions">
-            <a href="equipment-details.php?id=<?= $eq['equipment_id'] ?>" class="btn btn-outline btn-sm">Details</a>
-            <a href="equipment-details.php?id=<?= $eq['equipment_id'] ?>#reserve" class="btn btn-solid btn-sm">Reserve</a>
+            <a href="reservation.php?equipment_id=<?= $eq['equipment_id'] ?>" class="btn btn-outline btn-sm">Details</a>
+<a href="reservation.php?equipment_id=<?= $eq['equipment_id'] ?>" class="btn btn-solid btn-sm">Reserve</a>
           </div>
         </div>
       </div>
