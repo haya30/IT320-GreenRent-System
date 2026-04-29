@@ -291,8 +291,9 @@ function starsHtml($rating) {
       </a>
 
       <ul class="gr-navlinks">
-        <li><a href="farmer-dashboard.php">Dashboard</a></li>
-        <li><a href="my-reservations.php" class="active">My Reservations</a></li>
+      <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
+      <li><a href="my-reservations.php">My Reservations</a></li>
+      <li><a href="logout.php">Logout</a></li>
       </ul>
 
       <div class="gr-nav-actions">
