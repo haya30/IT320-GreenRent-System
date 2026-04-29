@@ -48,10 +48,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 $stmt_insert->execute();
-                $success = 'Account created successfully!';
-                
-                // تنظيف المتغيرات بعد النجاح حتى لا يتم تعبئتها مجدداً في الفورم
-                $_POST = array();
+                $_SESSION['user'] = [
+                    'id'           => $conn->insert_id,
+                    'user_id'      => $conn->insert_id,
+                    'name'         => $first_name . ' ' . $last_name,
+                    'first_name'   => $first_name,
+                    'last_name'    => $last_name,
+                    'email'        => $email,
+                    'phone_number' => $phone_number,
+                    'role'         => $db_role,
+                    'status'       => 'active',
+                ];
+                if ($db_role === 'admin')     { header("Location: admin-dashboard.php"); }
+                elseif ($db_role === 'owner') { header("Location: owner-dashboard.php"); }
+                else                           { header("Location: farmer-dashboard.php"); }
+                exit;
             } catch (Exception $e) {
                 $error = 'An error occurred during registration. Please try again.';
             }

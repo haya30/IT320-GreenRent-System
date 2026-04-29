@@ -36,7 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($type === 'user' && $row['role'] === 'admin') {
                 $error = 'Please use the Admin Sign In button.';
             } else {
-                $_SESSION['user'] = $row;
+                $_SESSION['user'] = [
+                    'id'           => $row['user_id'],
+                    'user_id'      => $row['user_id'],
+                    'name'         => $row['first_name'] . ' ' . $row['last_name'],
+                    'first_name'   => $row['first_name'],
+                    'last_name'    => $row['last_name'],
+                    'email'        => $row['email'],
+                    'phone_number' => $row['phone_number'],
+                    'role'         => $row['role'],
+                    'status'       => $row['status'],
+                ];
                 if ($row['role'] === 'admin')     header("Location: admin-dashboard.php");
                 elseif ($row['role'] === 'owner') header("Location: owner-dashboard.php");
                 else                              header("Location: farmer-dashboard.php");
