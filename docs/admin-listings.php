@@ -2,7 +2,7 @@
 session_start();
 include 'db.php';
 
-// requireRole('admin'); // Uncomment when login/session is ready
+requireRole('admin');
 
 // ── Flash message ─────────────────────────────────────────────
 $message     = "";
@@ -36,25 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
 $equipmentList = [];
 
 $result = $conn->query("
-    SELECT e.*, COALESCE(u.full_name, CONCAT('Owner #', e.owner_id)) AS owner_name
+    SELECT e.*, CONCAT(u.first_name, ' ', u.last_name) AS owner_name
     FROM   equipment e
     LEFT   JOIN users u ON e.owner_id = u.user_id
     ORDER  BY e.equipment_id DESC
 ");
 
-if (!$result) {
-    // Fallback: users table structure differs — show owner_id only
-    $result = $conn->query("
-        SELECT *, CONCAT('Owner #', owner_id) AS owner_name
-        FROM equipment
-        ORDER BY equipment_id DESC
-    ");
-}
-
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $equipmentList[] = $row;
-    }
+while ($row = $result->fetch_assoc()) {
+    $equipmentList[] = $row;
 }
 
 // ── Status badge helper ───────────────────────────────────────

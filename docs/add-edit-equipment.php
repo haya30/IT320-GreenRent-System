@@ -1,6 +1,8 @@
 <?php
 session_start();
 include 'db.php';
+requireRole('owner');
+$owner_id = $_SESSION['user']['user_id'];
 
 $message = "";
 $messageType = "success";
@@ -10,8 +12,6 @@ if (isset($_SESSION['flash_message'])) {
     $messageType = $_SESSION['flash_type'] ?? "success";
     unset($_SESSION['flash_message'], $_SESSION['flash_type']);
 }
-
-$owner_id = $_SESSION['user_id'] ?? 2; // مؤقتًا إلى أن يجهز تسجيل الدخول
 
 $editData = [
     "equipment_id" => "",
@@ -87,21 +87,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $equipment_id = intval($equipment_id);
 
             $stmt = $conn->prepare("
-                UPDATE equipment 
-                SET equipment_name = ?, 
-                    type = ?, 
-                    description = ?, 
-                    `condition` = ?, 
-                    price_per_day = ?, 
-                    location = ?, 
-                    availability_status = ?, 
-                    operator_included = ?, 
+                UPDATE equipment
+                SET equipment_name = ?,
+                    type = ?,
+                    description = ?,
+                    `condition` = ?,
+                    price_per_day = ?,
+                    location = ?,
+                    availability_status = ?,
+                    operator_included = ?,
                     image_url = ?
-                WHERE equipment_id = ?
+                WHERE equipment_id = ? AND owner_id = ?
             ");
 
             $stmt->bind_param(
-                "ssssdssisi",
+                "ssssdssisii",
                 $name,
                 $type,
                 $description,
@@ -111,7 +111,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $status,
                 $operator,
                 $image_url,
-                $equipment_id
+                $equipment_id,
+                $owner_id
             );
 
             if ($stmt->execute()) {
