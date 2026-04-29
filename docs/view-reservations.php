@@ -11,6 +11,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'owner') {
 $user     = $_SESSION['user'];
 $uid      = $user['user_id'];
 $initials = strtoupper(mb_substr($user['first_name'], 0, 1) . mb_substr($user['last_name'], 0, 1));
+$short_name = htmlspecialchars($user['first_name'] . ' ' . mb_substr($user['last_name'], 0, 1) . '.');
 
 // ── Handle cancel (owner can cancel pending reservations on their equipment) ──
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
@@ -88,18 +89,35 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
     body { font-family: 'DM Sans', sans-serif; background: #eef5ee; color: var(--text-dark); min-height: 100vh; }
     a { text-decoration: none; }
 
+    /* ── HEADER ── */
     .gr-header { position: sticky; top: 0; z-index: 100; background: var(--white); border-bottom: 1px solid rgba(82,183,136,.20); box-shadow: var(--shadow-sm); }
     .gr-nav { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
     .gr-logo { display: flex; align-items: center; gap: 10px; }
     .gr-logo img { height: 40px; width: auto; }
     .gr-logo-text span:first-child { display: block; font-family: 'DM Serif Display', serif; font-size: 21px; color: var(--green-deep); line-height: 1; }
     .gr-logo-text span:last-child { display: block; font-size: 10px; color: var(--text-muted); font-weight: 500; letter-spacing: .8px; text-transform: uppercase; margin-top: 2px; }
+
     .gr-navlinks { display: flex; gap: 24px; list-style: none; margin: 0 auto; }
-    .gr-navlinks a { color: var(--text-muted); font-weight: 500; font-size: 14.5px; transition: color 0.2s; }
-    .gr-navlinks a:hover, .gr-navlinks a.active { color: var(--green-deep); font-weight: 700; }
+    .gr-navlinks a { color: var(--text-muted); font-weight: 500; font-size: 14.5px; transition: color 0.2s; padding: 6px 0; position: relative; }
+    .gr-navlinks a:hover { color: var(--green-deep); font-weight: 700; }
+    .gr-navlinks a.active { color: var(--green-mid); font-weight: 700; }
+    .gr-navlinks a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: var(--green-light);
+      border-radius: 99px;
+    }
+
     .gr-nav-actions { display: flex; align-items: center; gap: 16px; }
-    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); }
-    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; }
+    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; cursor: pointer; }
+    .btn-logout:hover { background: #fef2f2; }
+
     .btn-solid { display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; border-radius: 10px; font-weight: 600; font-size: 13.5px; background: var(--green-mid); color: white; transition: .2s; border: none; cursor: pointer; }
     .btn-solid:hover { background: var(--green-deep); }
     .btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; border-radius: 10px; font-weight: 600; font-size: 13.5px; background: transparent; color: var(--green-mid); border: 1.5px solid var(--green-mid); transition: .2s; cursor: pointer; }
@@ -115,7 +133,7 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
     .reservations-hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin-bottom: 10px; letter-spacing: -.4px; }
     .reservations-hero p { font-size: 14.5px; line-height: 1.7; color: rgba(255,255,255,.82); max-width: 670px; }
     .reservations-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn-soft { background: rgba(255,255,255,.10); color: var(--white); border: 1.5px solid rgba(255,255,255,.16); padding: 9px 18px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; }
+    .btn-soft { background: rgba(255,255,255,.10); color: var(--white); border: 1.5px solid rgba(255,255,255,.16); padding: 9px 18px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; display: inline-flex; align-items: center; justify-content: center; }
     .btn-soft:hover { background: rgba(255,255,255,.16); }
 
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 26px; }
@@ -161,15 +179,13 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
 
     .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .action-btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; transition: .18s; border: 1.5px solid transparent; cursor: pointer; }
-    .action-confirm { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
-    .action-confirm:hover { background: #d1fae5; }
     .action-cancel { background: transparent; color: #b91c1c; border-color: #b91c1c; }
     .action-cancel:hover { background: #fef2f2; }
 
     footer { background: var(--green-deep); color: white; margin-top: 60px; }
     .footer-wave { display: block; width: 100%; height: 50px; }
     .footer-main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .footer-logo img { height: 44px; filter: brightness(0) invert(1) opacity(.85); }
+    .footer-logo img { height: 44px; }
     .footer-tagline { font-size: 13px; color: rgba(255,255,255,.6); text-align: center; max-width: 440px; }
     .footer-badges { border-top: 1px solid rgba(255,255,255,.10); max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .f-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 5px 12px; font-size: 11.5px; color: rgba(255,255,255,.65); }
@@ -177,7 +193,7 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
     .footer-bottom { border-top: 1px solid rgba(255,255,255,.10); }
     .footer-bottom-inner { max-width: 1200px; margin: 0 auto; padding: 14px 32px; text-align: center; font-size: 12.5px; color: rgba(255,255,255,.40); }
 
-    @media (max-width: 1050px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } .filters-grid { grid-template-columns: 1fr 1fr; } .reservations-hero { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 1000px) { .gr-navlinks { display: none; } .summary-grid { grid-template-columns: repeat(2, 1fr); } .filters-grid { grid-template-columns: 1fr 1fr; } .reservations-hero { flex-direction: column; align-items: flex-start; } }
     @media (max-width: 700px) { .reservations-page { padding: 24px 16px 0; } .summary-grid, .filters-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -192,16 +208,19 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
         <span>Agricultural Equipment</span>
       </div>
     </a>
+
     <ul class="gr-navlinks">
-      <li><a href="owner-dashboard.php">Owner DashBoard</a></li>
+      <li><a href="owner-dashboard.php">Owner Dashboard</a></li>
+      <li><a href="add-edit-equipment.php">Manage Equipment</a></li>
       <li><a href="view-reservations.php" class="active">Reservations</a></li>
     </ul>
+
     <div class="gr-nav-actions">
-      <div class="farmer-badge">
+      <div class="farmer-badge" title="<?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>">
         <div class="avatar"><?= $initials ?></div>
-        <?= htmlspecialchars($user['first_name']) ?>
+        <?= $short_name ?>
       </div>
-      <a href="logout.php" class="btn-outline" style="padding:6px 12px;border-color:#e74c3c;color:#e74c3c;">Logout</a>
+      <a href="logout.php" class="btn-logout">Logout</a>
     </div>
   </nav>
 </header>
@@ -219,7 +238,8 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
       <p>View all reservations made for your equipment. You can cancel pending reservations if needed.</p>
     </div>
     <div class="reservations-hero-actions">
-      <a href="owner-dashboard.php" class="btn-soft">My Equipment</a>
+      <a href="owner-dashboard.php" class="btn-soft">← Owner Dashboard</a>
+      <a href="add-edit-equipment.php" class="btn-soft">Manage Equipment</a>
     </div>
   </section>
 

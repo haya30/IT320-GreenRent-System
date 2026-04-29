@@ -11,8 +11,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'renter') {
 $user = $_SESSION['user'];
 $uid = $user['user_id'];
 
-// استخراج الحروف الأولى لاسم المستخدم لعرضها في الـ Avatar
+// استخراج الحروف الأولى لاسم المستخدم والاسم المختصر لعرضها في الـ Avatar
 $initials = strtoupper(mb_substr($user['first_name'], 0, 1) . mb_substr($user['last_name'], 0, 1));
+$short_name = htmlspecialchars($user['first_name'] . ' ' . mb_substr($user['last_name'], 0, 1) . '.');
 
 // ── جلب المعدات مع بحث وفلتر وترتيب ──────────────────────
 $search   = trim($_GET['search']   ?? '');
@@ -63,9 +64,17 @@ if ($params) {
 }
 
 // ── إحصاءات الحجوزات الخاصة بالمزارع ──────────────────────────────────
-$total_res    = $conn->prepare("SELECT COUNT(*) c FROM reservations WHERE renter_id=?");
-$total_res->bind_param("i", $uid); $total_res->execute();
+$total_res = $conn->prepare("SELECT COUNT(*) c FROM reservations WHERE renter_id=?");
+$total_res->bind_param("i", $uid); 
+$total_res->execute();
 $res_count = $total_res->get_result()->fetch_assoc()['c'];
+
+// متوسط تقييم المزارع (للمعدات التي استأجرها أو قيمها) كقيمة جمالية للداشبورد
+$avg_rating_query = $conn->prepare("SELECT AVG(rating) a FROM reviews WHERE renter_id=?");
+$avg_rating_query->bind_param("i", $uid);
+$avg_rating_query->execute();
+$avg_rating_res = $avg_rating_query->get_result()->fetch_assoc()['a'];
+$avg_rating_display = $avg_rating_res ? number_format($avg_rating_res, 1) . '★' : 'N/A';
 
 $recent_res_query = $conn->prepare("
     SELECT r.start_date, r.end_date, e.equipment_name 
@@ -99,6 +108,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
   <title>Farmer Dashboard — GreenRent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  
   <style>
     /* ── BASE & VARIABLES ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -118,7 +128,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     body { font-family: 'DM Sans', sans-serif; background: #eef5ee; color: var(--text-dark); min-height: 100vh; }
     a { text-decoration: none; }
 
-    /* ── HEADER & NAVBAR ── */
+    /* ── HEADER & NAVBAR (Style matched exactly to Owner Dashboard) ── */
     .gr-header { position: sticky; top: 0; z-index: 100; background: var(--white); border-bottom: 1px solid rgba(82,183,136,.20); box-shadow: var(--shadow-sm); }
     .gr-nav { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
     .gr-logo { display: flex; align-items: center; gap: 10px; }
@@ -131,17 +141,17 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     .gr-navlinks a:hover, .gr-navlinks a.active { color: var(--green-deep); font-weight: 700; }
     
     .gr-nav-actions { display: flex; align-items: center; gap: 16px; }
-    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; }
-    .farmer-badge:hover { background: var(--green-pale); }
-    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
-
-    /* ── BUTTONS ── */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; border-radius: 10px; padding: 10px 18px; cursor: pointer; border: none; transition: all .2s; }
-    .btn-solid { background: var(--green-mid); color: white; box-shadow: 0 2px 8px rgba(45,106,79,.25); }
+    .btn-solid { background: var(--green-mid); color: white; box-shadow: 0 2px 8px rgba(45,106,79,.30); }
     .btn-solid:hover { background: var(--green-deep); transform: translateY(-1px); }
     .btn-outline { background: transparent; border: 1.5px solid var(--green-mid); color: var(--green-mid); }
     .btn-outline:hover { background: var(--green-pale); }
-    .btn-sm { padding: 6px 14px; font-size: 12.5px; }
+    
+    .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; }
+    .btn-logout:hover { background: #fef2f2; }
+
+    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; }
+    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
 
     /* ── DASHBOARD HERO ── */
     .dash-hero { background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 55%, #3a8a5f 100%); padding: 40px 0 50px; position: relative; overflow: hidden; }
@@ -202,12 +212,12 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     .equip-card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
     .meta-tag { font-size: 11.5px; background: var(--green-pale); color: var(--green-mid); padding: 3px 10px; border-radius: 20px; font-weight: 600; }
     .equip-card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-    .equip-card-footer { padding: 14px 18px; border-top: 1px solid var(--green-pale); display: flex; justify-content: space-between; align-items: center; }
-    .price-tag { display: flex; align-items: baseline; gap: 4px; }
+    .equip-card-footer { padding: 14px 18px; border-top: 1px solid var(--green-pale); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .price-tag { display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; }
     .price { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--green-deep); }
     .per { font-size: 12px; color: var(--text-muted); }
-    .card-actions { display: flex; gap: 8px; }
-
+    .card-actions { display: flex; flex: 1; justify-content: flex-end; }
+    
     /* ── NO RESULTS ── */
     .no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .no-results svg { margin-bottom: 14px; opacity: .35; }
@@ -217,7 +227,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     footer { background: var(--green-deep); color: white; margin-top: 60px; }
     .footer-wave { display: block; width: 100%; height: 50px; }
     .footer-main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .footer-logo img { height: 44px; filter: brightness(0) invert(1) opacity(.85); }
+    .footer-logo img { height: 44px; }
     .footer-tagline { font-size: 13px; color: rgba(255,255,255,.6); text-align: center; max-width: 440px; }
     .footer-social { display: flex; gap: 8px; }
     .footer-social a { width: 36px; height: 36px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75); text-decoration: none; transition: background .2s; }
@@ -229,7 +239,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     .footer-bottom-inner { max-width: 1200px; margin: 0 auto; padding: 14px 32px; text-align: center; font-size: 12.5px; color: rgba(255,255,255,.40); }
 
     @media(max-width: 900px) {
-      .gr-navlinks { display: none; } /* Hide on small screens for simplicity */
+      .gr-navlinks { display: none; }
     }
     @media(max-width: 768px) { 
       .dash-hero-inner { flex-direction: column; align-items: flex-start; } 
@@ -253,14 +263,15 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     <ul class="gr-navlinks">
       <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
       <li><a href="my-reservations.php">My Reservations</a></li>
-      <li><a href="logout.php">Logout</a></li>
+      <li><a href="farmer-profile.php">Profile</a></li>
     </ul>
 
     <div class="gr-nav-actions">
-      <div class="farmer-badge" title="Logged in as <?= htmlspecialchars($user['first_name']) ?>">
+      <div class="farmer-badge" title="Logged in as <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>">
         <div class="avatar"><?= $initials ?></div>
-        <?= htmlspecialchars($user['first_name']) ?>
+        <?= $short_name ?>
       </div>
+      <a href="logout.php" class="btn-logout">Logout</a>
     </div>
   </nav>
 </header>
@@ -279,11 +290,11 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
       </div>
       <div class="stat-pill">
         <div class="val"><?= $res_count ?></div>
-        <div class="lbl">Total Reservations</div>
+        <div class="lbl">My Reservations</div>
       </div>
       <div class="stat-pill">
-        <div class="val">⭐</div>
-        <div class="lbl">Verified</div>
+        <div class="val"><?= $avg_rating_display ?></div>
+        <div class="lbl">Avg Rating</div>
       </div>
     </div>
   </div>
@@ -313,7 +324,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
         <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">No active reservations yet.</span>
       <?php endif; ?>
       
-      <a href="view-reservations.php" class="btn btn-outline btn-sm" style="margin-left: 10px;">View All</a>
+      <a href="my-reservations.php" class="btn btn-outline btn-sm" style="margin-left: 10px;">View All</a>
     </div>
   </div>
 </div>
@@ -326,11 +337,11 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
         <svg class="filter-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/>
         </svg>
-        <input type="text" name="search" placeholder="Search tractors, harvesters, seeders…" value="<?= htmlspecialchars($search) ?>"/>
+        <input type="text" name="search" placeholder="Search tractors, harvesters, seeders…" value="<?= htmlspecialchars($search) ?>" onchange="this.form.submit()"/>
       </div>
 
       <span class="filter-label">Type:</span>
-      <select name="type" class="filter-select">
+      <select name="type" class="filter-select" onchange="this.form.submit()">
         <option value="">All Types</option>
         <?php
           $types_q = $conn->query("SELECT DISTINCT type FROM equipment WHERE availability_status != 'deleted' ORDER BY type");
@@ -341,7 +352,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
       </select>
 
       <span class="filter-label">Location:</span>
-      <select name="location" class="filter-select">
+      <select name="location" class="filter-select" onchange="this.form.submit()">
         <option value="">All Locations</option>
         <?php
           $locs_q = $conn->query("SELECT DISTINCT location FROM equipment WHERE availability_status != 'deleted' ORDER BY location");
@@ -352,26 +363,26 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
       </select>
 
       <span class="filter-label">Price:</span>
-      <select name="price" class="filter-select">
+      <select name="price" class="filter-select" onchange="this.form.submit()">
         <option value="">Any Price</option>
-        <option value="low"  <?= $price_f==='low' ?'selected':'' ?>>Under 200 SAR</option>
-        <option value="mid"  <?= $price_f==='mid' ?'selected':'' ?>>200–500 SAR</option>
-        <option value="high" <?= $price_f==='high'?'selected':'' ?>>Over 500 SAR</option>
+        <option value="low"  <?= $price_f==='low' ?'selected':'' ?>>Under SAR 200/day</option>
+        <option value="mid"  <?= $price_f==='mid' ?'selected':'' ?>>SAR 200–500/day</option>
+        <option value="high" <?= $price_f==='high'?'selected':'' ?>>Above SAR 500/day</option>
       </select>
 
       <span class="filter-label">Availability:</span>
-      <select name="avail" class="filter-select">
+      <select name="avail" class="filter-select" onchange="this.form.submit()">
         <option value="">All</option>
         <option value="available" <?= $avail_f==='available'?'selected':'' ?>>Available Now</option>
         <option value="limited" <?= $avail_f==='limited'?'selected':'' ?>>Limited</option>
       </select>
 
-      <button type="submit" class="btn btn-solid">Apply</button>
-      
       <?php if ($search || $type_f || $loc_f || $price_f || $avail_f || $sort_f): ?>
         <a href="farmer-dashboard.php" class="btn btn-outline" title="Clear Filters" style="padding: 10px;">✖</a>
       <?php endif; ?>
 
+      <span class="filter-result-count" id="resultCount">Showing <?= count($equipment_list) ?> results</span>
+      
       <input type="hidden" name="sort" id="hiddenSort" value="<?= htmlspecialchars($sort_f) ?>">
 
     </div>
@@ -388,7 +399,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     <div style="display:flex;gap:8px;align-items:center;">
       <span style="font-size:13px;color:var(--text-muted);">Sort by:</span>
       <select class="filter-select" id="sortSelect" style="padding:8px 12px;" onchange="document.getElementById('hiddenSort').value = this.value; document.getElementById('filterForm').submit();">
-        <option value="">Recommended (Newest)</option>
+        <option value="">Recommended</option>
         <option value="price_asc"  <?= $sort_f==='price_asc' ?'selected':'' ?>>Price: Low to High</option>
         <option value="price_desc" <?= $sort_f==='price_desc'?'selected':'' ?>>Price: High to Low</option>
         <option value="rating"     <?= $sort_f==='rating'    ?'selected':'' ?>>Rating</option>
@@ -445,8 +456,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
             <span class="per">per day</span>
           </div>
           <div class="card-actions">
-            <a href="reservation.php?equipment_id=<?= $eq['equipment_id'] ?>" class="btn btn-outline btn-sm">Details</a>
-<a href="reservation.php?equipment_id=<?= $eq['equipment_id'] ?>" class="btn btn-solid btn-sm">Reserve</a>
+            <a href="equipment-details.php?id=<?= $eq['equipment_id'] ?>" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center;">Details</a>
           </div>
         </div>
       </div>

@@ -18,7 +18,7 @@ $short_name = htmlspecialchars($user['first_name'] . ' ' . mb_substr($user['last
 // ── جلب الإحصائيات (Stats) الخاصة بصاحب المعدة ────────────────────────────
 
 // 1. عدد المعدات المدرجة
-$stmt = $conn->prepare("SELECT COUNT(*) c FROM equipment WHERE owner_id = ? AND availability_status != 'deleted'");
+$stmt = $conn->prepare("SELECT COUNT(*) c FROM equipment WHERE owner_id = ? AND status = 'active'");
 $stmt->bind_param("i", $uid);
 $stmt->execute();
 $equip_count = $stmt->get_result()->fetch_assoc()['c'];
@@ -42,7 +42,7 @@ $stmt->execute();
 $avg_rating = round($stmt->get_result()->fetch_assoc()['a'] ?? 0, 1);
 
 // ── جلب أحدث المعدات (أحدث 4) ──────────────────────────────────────────
-$stmt = $conn->prepare("SELECT * FROM equipment WHERE owner_id = ? AND availability_status != 'deleted' ORDER BY equipment_id DESC LIMIT 4");
+$stmt = $conn->prepare("SELECT * FROM equipment WHERE owner_id = ? AND status = 'active' ORDER BY equipment_id DESC LIMIT 4");
 $stmt->bind_param("i", $uid);
 $stmt->execute();
 $recent_equipment = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -166,6 +166,7 @@ $latest_reservations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     .status-pending { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
     .status-confirmed, .status-completed { background: #ecfdf3; color: #15803d; border: 1px solid #bbf7d0; }
     .status-cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .status-unavailable { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
     .empty-note { padding: 18px 22px 22px; font-size: 13px; color: var(--text-muted); line-height: 1.7; text-align: center; }
 
@@ -176,8 +177,7 @@ $latest_reservations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     footer { background: var(--green-deep); color: white; margin-top: 40px; }
     .footer-wave { display: block; width: 100%; height: 50px; }
     .footer-main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .footer-logo img { height: 44px; filter: brightness(0) invert(1) opacity(.85); }
-    .footer-tagline { font-size: 13px; color: rgba(255,255,255,.6); text-align: center; max-width: 440px; }
+    .footer-logo img { height: 44px; }    .footer-tagline { font-size: 13px; color: rgba(255,255,255,.6); text-align: center; max-width: 440px; }
     .footer-social { display: flex; gap: 8px; }
     .footer-social a { width: 36px; height: 36px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75); text-decoration: none; transition: background .2s; }
     .footer-social a:hover { background: var(--green-light); }
@@ -241,28 +241,28 @@ $latest_reservations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <div class="stat-icon">🚜</div>
         <div class="stat-title">Listed Equipment</div>
         <div class="stat-value"><?= $equip_count ?></div>
-        <div class="stat-sub">Total equipment currently listed.</div>
+        <div class="stat-sub">Total equipment currently listed by this owner.</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon">📅</div>
         <div class="stat-title">Active Reservations</div>
         <div class="stat-value"><?= $active_res_count ?></div>
-        <div class="stat-sub">Bookings that are currently active.</div>
+        <div class="stat-sub">Bookings that are currently active or upcoming.</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon">⏳</div>
         <div class="stat-title">Pending Requests</div>
         <div class="stat-value"><?= $pending_req_count ?></div>
-        <div class="stat-sub">Requests waiting for confirmation.</div>
+        <div class="stat-sub">Reservation requests waiting for confirmation.</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon">⭐</div>
         <div class="stat-title">Average Rating</div>
         <div class="stat-value"><?= $avg_rating > 0 ? $avg_rating : 'N/A' ?></div>
-        <div class="stat-sub">Based on previous rental reviews.</div>
+        <div class="stat-sub">Based on previous rental reviews and owner feedback.</div>
       </div>
     </section>
 
