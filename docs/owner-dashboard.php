@@ -205,6 +205,7 @@ $latest_reservations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <li><a href="owner-dashboard.php" class="active">Owner Dashboard</a></li>
         <li><a href="add-edit-equipment.php">Manage Equipment</a></li>
         <li><a href="view-reservations.php">Reservations</a></li>
+        <li><a href="owner-profile.php">My Profile</a></li>
       </ul>
 
       <div class="gr-nav-actions">
