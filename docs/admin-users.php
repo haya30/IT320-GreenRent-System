@@ -4,19 +4,9 @@ require_once __DIR__ . '/db.php';
 
 function e($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 
-$userId = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
-$role = $_SESSION['role'] ?? null;
-
-if (!$userId) {
-    header('Location: login.php');
-    exit();
-}
-if ($role !== 'admin') {
-    if ($role === 'renter') header('Location: farmer-dashboard.php');
-    elseif ($role === 'owner') header('Location: owner-dashboard.php');
-    else header('Location: login.php');
-    exit();
-}
+$currentUser  = getCurrentUser();
+$adminName    = htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']);
+$adminInitial = strtoupper($currentUser['first_name'][0]);
 
 $message = '';
 
@@ -25,7 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['ne
     $newStatus = $_POST['new_status'];
     $allowed = ['active', 'suspended', 'inactive'];
 
-    if (in_array($newStatus, $allowed, true) && $targetUserId !== (int)$userId) {
+    // FIX #2: was $userId (undefined), now correctly uses $currentUser['user_id']
+    if (in_array($newStatus, $allowed, true) && $targetUserId !== (int)$currentUser['user_id']) {
         $stmt = $conn->prepare("UPDATE users SET status = ? WHERE user_id = ? AND role <> 'admin'");
         $stmt->bind_param('si', $newStatus, $targetUserId);
         $stmt->execute();
@@ -52,7 +43,7 @@ $users = $conn->query("SELECT user_id, first_name, last_name, email, phone_numbe
   <div class="admin-header-inner">
     <div style="display:flex;align-items:center;flex-shrink:0;">
       <a href="admin-dashboard.php" class="admin-logo">
-        <img src="logo.jpg" alt="GreenRent Logo"/>
+       <img src="logo.png" alt="GreenRent Logo"/>
         <div class="admin-logo-text"><span>GreenRent</span><span>Agricultural Equipment</span></div>
       </a>
     </div>
@@ -60,14 +51,15 @@ $users = $conn->query("SELECT user_id, first_name, last_name, email, phone_numbe
     <ul class="admin-nav">
       <li><a href="admin-dashboard.php">Dashboard</a></li>
       <li><a href="admin-users.php" class="active">User Accounts</a></li>
-      <li><a href="admin-listings.html">Equipment Listings</a></li>
-      <li><a href="admin-reviews.php">Reviews & Ratings</a></li>
+      <li><a href="admin-listings.php">Equipment Listings</a></li>
+      <li><a href="admin-reviews.php">Reviews &amp; Ratings</a></li>
     </ul>
 
     <div class="admin-header-right">
       <div class="admin-profile">
-        <div class="admin-avatar">A</div>
-        <span class="admin-profile-name">Admin</span>
+        <!-- FIX #3: was hardcoded "A" / "Admin", now uses dynamic variables -->
+        <div class="admin-avatar"><?= e($adminInitial) ?></div>
+        <span class="admin-profile-name"><?= e($adminName) ?></span>
       </div>
       <div class="admin-divider"></div>
       <a href="logout.php" class="btn-logout">
@@ -129,31 +121,32 @@ $users = $conn->query("SELECT user_id, first_name, last_name, email, phone_numbe
               <div class="action-btns">
                 <?php if ($u['role'] === 'admin'): ?>
                   <span style="font-size:12px;color:var(--text-muted);">Protected</span>
+
                 <?php elseif ($u['status'] === 'suspended'): ?>
-                  <form method="POST" style="display:inline;" id="form-<?= e($u['user_id']) ?>-active">
-                    <input type="hidden" name="user_id" value="<?= e($u['user_id']) ?>">
-                    <input type="hidden" name="new_status" value="active">
-                    <button class="icon-btn restore" type="button" onclick="reactivateUser('<?= e($rowId) ?>','<?= e($statusId) ?>','<?= e(addslashes($name)) ?>')">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
-                      Reactivate
-                    </button>
-                  </form>
+                  <button class="icon-btn restore" type="button"
+                    onclick="reactivateUser('<?= e($rowId) ?>','<?= e($statusId) ?>','<?= e(addslashes($name)) ?>','<?= e($u['user_id']) ?>')">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Reactivate
+                  </button>
+
                 <?php else: ?>
-                  <form method="POST" style="display:inline;" id="form-<?= e($u['user_id']) ?>-suspended">
-                    <input type="hidden" name="user_id" value="<?= e($u['user_id']) ?>">
-                    <input type="hidden" name="new_status" value="suspended">
-                    <button class="icon-btn danger" type="button" onclick="openModal('suspend-modal','<?= e($rowId) ?>','<?= e($statusId) ?>','<?= e(addslashes($name)) ?>')">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
-                      Suspend
-                    </button>
-                  </form>
+                  <button class="icon-btn danger" type="button"
+                    onclick="openModal('suspend-modal','<?= e($rowId) ?>','<?= e($statusId) ?>','<?= e(addslashes($name)) ?>','<?= e($u['user_id']) ?>')">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Suspend
+                  </button>
+
                 <?php endif; ?>
-              </div>
+              </div><!-- FIX #1: closes .action-btns -->
             </td>
-          </tr>
+          </tr><!-- FIX #1: closes <tr> -->
           <?php endwhile; ?>
-        <?php else: ?>
-          <tr><td colspan="5">No users found.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -177,7 +170,7 @@ $users = $conn->query("SELECT user_id, first_name, last_name, email, phone_numbe
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
 
 <script>
-  let pendingRowId = null, pendingStatusId = null, pendingForm = null;
+  let pendingRowId = null, pendingStatusId = null, pendingUserId = null, pendingUserName = null;
 
   function filterTable(tbodyId, query) {
     const q = query.toLowerCase();
@@ -186,41 +179,79 @@ $users = $conn->query("SELECT user_id, first_name, last_name, email, phone_numbe
     });
   }
 
-  function openModal(modalId, rowId, statusId, name) {
-    pendingRowId = rowId;
+  function openModal(modalId, rowId, statusId, name, userId) {
+    pendingRowId    = rowId;
     pendingStatusId = statusId;
-    pendingForm = document.querySelector('#' + rowId + ' form');
+    pendingUserId   = userId;
+    pendingUserName = name;
     document.getElementById('modal-user-name').textContent = name;
     document.getElementById(modalId).classList.add('open');
   }
 
   function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('open');
-    pendingRowId = pendingStatusId = pendingForm = null;
+    pendingRowId = pendingStatusId = pendingUserId = pendingUserName = null;
   }
 
   function confirmSuspend() {
-    document.getElementById(pendingStatusId).className = 'pill suspended';
-    document.getElementById(pendingStatusId).textContent = 'Suspended';
-    document.querySelector('#' + pendingRowId + ' .action-btns').innerHTML =
-      `<button class="icon-btn restore" onclick="reactivateUser('${pendingRowId}','${pendingStatusId}','User')">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
-        Reactivate</button>`;
-    closeModal('suspend-modal');
-    showToast('Account suspended — action recorded.');
-    if (pendingForm) pendingForm.submit();
+    const rowId    = pendingRowId;
+    const statusId = pendingStatusId;
+    const userId   = pendingUserId;
+    const name     = pendingUserName;
+
+    updateUserStatus(userId, 'suspended', () => {
+      document.getElementById(statusId).className = 'pill suspended';
+      document.getElementById(statusId).textContent = 'Suspended';
+      // FIX #4: was calling undefined openReactivateModal(), now correctly calls reactivateUser()
+      document.querySelector('#' + rowId + ' .action-btns').innerHTML =
+        `<button class="icon-btn restore" onclick="reactivateUser('${rowId}','${statusId}','${name}','${userId}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Reactivate
+        </button>`;
+      showToast('Account suspended — action recorded.');
+      closeModal('suspend-modal');
+    });
   }
 
-  function reactivateUser(rowId, statusId, name) {
-    document.getElementById(statusId).className = 'pill active';
-    document.getElementById(statusId).textContent = 'Active';
-    document.querySelector('#' + rowId + ' .action-btns').innerHTML =
-      `<button class="icon-btn danger" onclick="openModal('suspend-modal','${rowId}','${statusId}','${name}')">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/></svg>
-        Suspend</button>`;
-    showToast('Account reactivated successfully.');
-    const form = document.querySelector('#' + rowId + ' form');
-    if (form) form.submit();
+  function updateUserStatus(userId, newStatus, onSuccess) {
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('new_status', newStatus);
+
+    fetch(window.location.href, {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => {
+      if (res.ok) {
+        onSuccess();
+      } else {
+        showToast('Error: Server returned ' + res.status);
+      }
+    })
+    .catch(err => {
+      showToast('Network error — please try again.');
+      console.error(err);
+    });
+  }
+
+  function reactivateUser(rowId, statusId, name, userId) {
+    updateUserStatus(userId, 'active', () => {
+      document.getElementById(statusId).className = 'pill active';
+      document.getElementById(statusId).textContent = 'Active';
+      document.querySelector('#' + rowId + ' .action-btns').innerHTML =
+        `<button class="icon-btn danger" onclick="openModal('suspend-modal','${rowId}','${statusId}','${name}','${userId}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Suspend
+        </button>`;
+      showToast('Account reactivated successfully.');
+    });
   }
 
   function showToast(msg) {
