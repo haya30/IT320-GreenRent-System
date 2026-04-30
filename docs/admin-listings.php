@@ -36,6 +36,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     exit;
 }
 
+// ── Handle Deactivate ──
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'deactivate') {
+    $equipment_id = $_POST['equipment_id'];
+
+    $stmt = $conn->prepare("UPDATE equipment SET availability_status = 'unavailable' WHERE equipment_id = ?");
+    $stmt->bind_param("i", $equipment_id);
+    $stmt->execute();
+
+    $_SESSION['flash'] = ['type' => 'success', 'message' => 'Equipment deactivated successfully.'];
+    header("Location: admin-listings.php");
+    exit;
+}
+
+// ── Handle Activate ──
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'activate') {
+    $equipment_id = $_POST['equipment_id'];
+
+    $stmt = $conn->prepare("UPDATE equipment SET availability_status = 'available' WHERE equipment_id = ?");
+    $stmt->bind_param("i", $equipment_id);
+    $stmt->execute();
+
+    $_SESSION['flash'] = ['type' => 'success', 'message' => 'Equipment activated successfully.'];
+    header("Location: admin-listings.php");
+    exit;
+}
+
 // ── Fetch all equipment (with owner name) ─────────────────────
 $equipmentList = [];
 
@@ -186,6 +212,17 @@ function statusBadge($status) {
       color: var(--text-muted);
       font-size: 14px;
     }
+
+    /* ── Warn (deactivate) button & modal ── */
+    .icon-btn.warn:hover  { background: rgba(180,83,9,.08); color: #b45309; border-color: rgba(180,83,9,.30); }
+    .modal-icon.warn      { background: rgba(180,83,9,.10); }
+    .btn-confirm.warn     { background: #b45309; color: #fff; }
+    .btn-confirm.warn:hover { opacity: .88; }
+
+    /* ── Success (activate) modal ── */
+    .modal-icon.success   { background: rgba(82,183,136,.12); }
+    .btn-confirm.success  { background: var(--green-mid); color: #fff; }
+    .btn-confirm.success:hover { opacity: .88; }
   </style>
 </head>
 <body>
@@ -322,27 +359,33 @@ function statusBadge($status) {
             <td><span class="<?php echo $badgeClass; ?>"><?php echo $badgeLabel; ?></span></td>
 
             <td>
-              <div class="action-btns">
-                <a href="add-edit-equipment.php?edit_id=<?php echo $row['equipment_id']; ?>" class="icon-btn">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Edit
-                </a>
-                <button class="icon-btn danger"
-                        onclick="openDeleteModal(<?php echo $row['equipment_id']; ?>, '<?php echo htmlspecialchars(addslashes($row['equipment_name'])); ?>')">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                    <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            </td>
+    <?php if ($row['availability_status'] === 'available') { ?>
 
+        <!-- Deactivate -->
+        <form method="POST" style="display:inline;">
+            <input type="hidden" name="action" value="deactivate">
+            <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
+            <button type="submit" class="icon-btn warn">Deactivate</button>
+        </form>
+
+    <?php } else { ?>
+
+        <!-- Activate -->
+        <form method="POST" style="display:inline;">
+            <input type="hidden" name="action" value="activate">
+            <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
+            <button type="submit" class="icon-btn success">Activate</button>
+        </form>
+
+    <?php } ?>
+
+    <!-- Delete (بدون تغيير) -->
+    <form method="POST" style="display:inline;">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
+        <button type="submit" class="icon-btn danger">Delete</button>
+    </form>
+</td>
           </tr>
           <?php endforeach; ?>
         <?php endif; ?>
@@ -357,6 +400,16 @@ function statusBadge($status) {
 <form id="deleteForm" method="POST" action="">
   <input type="hidden" name="action" value="delete">
   <input type="hidden" name="equipment_id" id="deleteId" value="">
+</form>
+
+<form id="deactivateForm" method="POST" action="">
+  <input type="hidden" name="action" value="deactivate">
+  <input type="hidden" name="equipment_id" id="deactivateId" value="">
+</form>
+
+<form id="activateForm" method="POST" action="">
+  <input type="hidden" name="action" value="activate">
+  <input type="hidden" name="equipment_id" id="activateId" value="">
 </form>
 
 <!-- Delete Confirmation Modal -->
@@ -375,6 +428,42 @@ function statusBadge($status) {
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
       <button class="btn-confirm danger" onclick="confirmDelete()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deactivate Confirmation Modal -->
+<div class="modal-overlay" id="deactivate-modal">
+  <div class="modal">
+    <div class="modal-icon warn">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <rect x="6" y="4" width="4" height="16" rx="1" stroke="#b45309" stroke-width="2"/>
+        <rect x="14" y="4" width="4" height="16" rx="1" stroke="#b45309" stroke-width="2"/>
+      </svg>
+    </div>
+    <h3>Deactivate Equipment?</h3>
+    <p><strong id="deactivate-listing-name"></strong> will be marked as inactive. The record will not be deleted and can be reactivated later.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeactivateModal()">Cancel</button>
+      <button class="btn-confirm warn" onclick="confirmDeactivate()">Yes, Deactivate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Activate Confirmation Modal -->
+<div class="modal-overlay" id="activate-modal">
+  <div class="modal">
+    <div class="modal-icon success">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#52b788" stroke-width="2"/>
+        <path d="M9 12l2 2 4-4" stroke="#52b788" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h3>Activate Equipment?</h3>
+    <p><strong id="activate-listing-name"></strong> will be set back to available and visible to renters.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeActivateModal()">Cancel</button>
+      <button class="btn-confirm success" onclick="confirmActivate()">Yes, Activate</button>
     </div>
   </div>
 </div>
@@ -433,7 +522,39 @@ function statusBadge($status) {
     document.getElementById('deleteForm').submit();
   }
 
-  // Close modal by clicking the backdrop
+  // ── Deactivate modal ─────────────────────
+  function openDeactivateModal(id, name) {
+    document.getElementById('deactivateId').value = id;
+    document.getElementById('deactivate-listing-name').textContent = name;
+    document.getElementById('deactivate-modal').classList.add('open');
+  }
+
+  function closeDeactivateModal() {
+    document.getElementById('deactivate-modal').classList.remove('open');
+    document.getElementById('deactivateId').value = '';
+  }
+
+  function confirmDeactivate() {
+    document.getElementById('deactivateForm').submit();
+  }
+
+  // ── Activate modal ───────────────────────
+  function openActivateModal(id, name) {
+    document.getElementById('activateId').value = id;
+    document.getElementById('activate-listing-name').textContent = name;
+    document.getElementById('activate-modal').classList.add('open');
+  }
+
+  function closeActivateModal() {
+    document.getElementById('activate-modal').classList.remove('open');
+    document.getElementById('activateId').value = '';
+  }
+
+  function confirmActivate() {
+    document.getElementById('activateForm').submit();
+  }
+
+  // Close any modal by clicking the backdrop
   document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
     overlay.addEventListener('click', function(e) {
       if (e.target === overlay) overlay.classList.remove('open');
