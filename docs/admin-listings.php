@@ -198,8 +198,8 @@ function statusBadge($status) {
     </div>
 
     <ul class="admin-nav">
-      <li><a href="admin-dashboard.html">Dashboard</a></li>
-      <li><a href="admin-users.html">User Accounts</a></li>
+      <li><a href="admin-dashboard.php">Dashboard</a></li>
+      <li><a href="admin-users.php">User Accounts</a></li>
       <li><a href="admin-listings.php" class="active">Equipment Listings</a></li>
       <li><a href="admin-reviews.html">Reviews &amp; Ratings</a></li>
     </ul>
