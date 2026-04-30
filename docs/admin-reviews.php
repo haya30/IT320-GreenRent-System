@@ -4,19 +4,9 @@ require_once __DIR__ . '/db.php';
 
 function e($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 
-$userId = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
-$role = $_SESSION['role'] ?? null;
-
-if (!$userId) {
-    header('Location: login.php');
-    exit();
-}
-if ($role !== 'admin') {
-    if ($role === 'renter') header('Location: farmer-dashboard.php');
-    elseif ($role === 'owner') header('Location: owner-dashboard.php');
-    else header('Location: login.php');
-    exit();
-}
+$currentUser  = getCurrentUser();
+$adminName    = htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']);
+$adminInitial = strtoupper($currentUser['first_name'][0]);
 
 $message = '';
 
@@ -141,7 +131,7 @@ $reviews = $conn->query("SELECT rv.review_id, rv.rating, rv.comment, rv.review_d
     <ul class="admin-nav">
       <li><a href="admin-dashboard.php">Dashboard</a></li>
       <li><a href="admin-users.php">User Accounts</a></li>
-      <li><a href="admin-listings.html">Equipment Listings</a></li>
+      <li><a href="admin-listings.php">Equipment Listings</a></li>
       <li><a href="admin-reviews.php" class="active">Reviews & Ratings</a></li>
     </ul>
 
