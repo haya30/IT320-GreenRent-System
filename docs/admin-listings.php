@@ -322,7 +322,7 @@ function statusBadge($status) {
 
         <?php if (empty($equipmentList)): ?>
           <tr class="empty-row">
-            <td colspan="7">No equipment found. <a href="add-edit-equipment.php" style="color:var(--green-mid);">Add the first listing.</a></td>
+            <td colspan="7">No equipment found</td>
           </tr>
         <?php else: ?>
           <?php foreach ($equipmentList as $row):
@@ -359,33 +359,24 @@ function statusBadge($status) {
             <td><span class="<?php echo $badgeClass; ?>"><?php echo $badgeLabel; ?></span></td>
 
             <td>
-    <?php if ($row['availability_status'] === 'available') { ?>
-
-        <!-- Deactivate -->
-        <form method="POST" style="display:inline;">
-            <input type="hidden" name="action" value="deactivate">
-            <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
-            <button type="submit" class="icon-btn warn">Deactivate</button>
-        </form>
-
-    <?php } else { ?>
-
-        <!-- Activate -->
-        <form method="POST" style="display:inline;">
-            <input type="hidden" name="action" value="activate">
-            <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
-            <button type="submit" class="icon-btn success">Activate</button>
-        </form>
-
-    <?php } ?>
-
-    <!-- Delete (بدون تغيير) -->
-    <form method="POST" style="display:inline;">
-        <input type="hidden" name="action" value="delete">
-        <input type="hidden" name="equipment_id" value="<?= $row['equipment_id'] ?>">
-        <button type="submit" class="icon-btn danger">Delete</button>
-    </form>
-</td>
+              <div class="action-btns">
+                <?php if ($row['availability_status'] === 'available') { ?>
+                <button type="button" class="icon-btn warn"
+                        onclick="openDeactivateModal(<?= $row['equipment_id'] ?>, '<?= htmlspecialchars(addslashes($row['equipment_name'])) ?>')">
+                  Deactivate
+                </button>
+                <?php } else { ?>
+                <button type="button" class="icon-btn success"
+                        onclick="openActivateModal(<?= $row['equipment_id'] ?>, '<?= htmlspecialchars(addslashes($row['equipment_name'])) ?>')">
+                  Activate
+                </button>
+                <?php } ?>
+                <button type="button" class="icon-btn danger"
+                        onclick="openDeleteModal(<?= $row['equipment_id'] ?>, '<?= htmlspecialchars(addslashes($row['equipment_name'])) ?>')">
+                  Delete
+                </button>
+              </div>
+            </td>
           </tr>
           <?php endforeach; ?>
         <?php endif; ?>
