@@ -498,7 +498,7 @@ $isEditMode = !empty($editData["equipment_id"]);
 
 <header class="gr-header">
   <nav class="gr-nav">
-    <a href="index.html" class="gr-logo">
+    <a href="index.php" class="gr-logo">
       <img src="logo.png" alt="GreenRent Logo" />
       <div class="gr-logo-text">
         <span>GreenRent</span>
@@ -507,14 +507,14 @@ $isEditMode = !empty($editData["equipment_id"]);
     </a>
 
     <ul class="gr-navlinks">
-      <li><a href="owner-dashboard.html">Dashboard</a></li>
+      <li><a href="owner-dashboard.php">Dashboard</a></li>
       <li><a href="add-edit-equipment.php">Manage Equipment</a></li>
-      <li><a href="view-reservations.html">Reservations</a></li>
+      <li><a href="view-reservations.php">Reservations</a></li>
     </ul>
 
     <div class="gr-nav-actions">
-      <a href="owner-profile.html" class="btn btn-outline">Profile</a>
-      <a href="login.html" class="btn btn-solid">Log Out</a>
+      <a href="owner-profile.php" class="btn btn-outline">Profile</a>
+      <a href="login.php" class="btn btn-solid">Log Out</a>
     </div>
   </nav>
 </header>
@@ -534,8 +534,8 @@ $isEditMode = !empty($editData["equipment_id"]);
     </div>
 
     <div>
-      <a href="owner-dashboard.html" class="btn btn-soft">Back to Dashboard</a>
-      <a href="view-reservations.html" class="btn btn-solid">View Reservations</a>
+      <a href="owner-dashboard.php" class="btn btn-soft">Back to Dashboard</a>
+      <a href="view-reservations.php" class="btn btn-solid">View Reservations</a>
     </div>
   </section>
 

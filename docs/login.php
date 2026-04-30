@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($row['role'] === 'admin')     header("Location: admin-dashboard.php");
                 elseif ($row['role'] === 'owner') header("Location: owner-dashboard.php");
                 else                              header("Location: farmer-dashboard.php");
-                exit;
+                exit; 
             }
         } else {
             $error = 'Incorrect email or password. Please try again.';
