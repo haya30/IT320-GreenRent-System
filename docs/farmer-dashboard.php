@@ -263,6 +263,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     <ul class="gr-navlinks">
       <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
       <li><a href="my-reservations.php">My Reservations</a></li>
+      <li><a href="farmer-profile.php">My Profile</a></li>
     </ul>
 
     <div class="gr-nav-actions">
