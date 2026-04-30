@@ -150,7 +150,7 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; }
     .btn-logout:hover { background: #fef2f2; }
 
-    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; }
+    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; text-decoration: none; cursor: pointer; }
     .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
 
     /* ── DASHBOARD HERO ── */
@@ -263,14 +263,13 @@ $default_svg = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stro
     <ul class="gr-navlinks">
       <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
       <li><a href="my-reservations.php">My Reservations</a></li>
-      <li><a href="farmer-profile.php">Profile</a></li>
     </ul>
 
     <div class="gr-nav-actions">
-      <div class="farmer-badge" title="Logged in as <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>">
+      <a href="farmer-profile.php" class="farmer-badge" title="Go to your profile">
         <div class="avatar"><?= $initials ?></div>
         <?= $short_name ?>
-      </div>
+      </a>
       <a href="logout.php" class="btn-logout">Logout</a>
     </div>
   </nav>

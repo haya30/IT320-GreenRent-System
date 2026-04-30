@@ -276,6 +276,11 @@ function starsHtml($rating) {
       .filters-body,.reservation-top,.reservation-bottom { padding:20px; }
       .equipment-info { align-items:flex-start; }
     }
+    .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; text-decoration: none; }
+    .btn-logout:hover { background: #fef2f2; }
+    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; text-decoration: none; cursor: pointer; }
+    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    .farmer-badge:hover { background: #e8f5e9; }
   </style>
 </head>
 <body>
@@ -293,12 +298,14 @@ function starsHtml($rating) {
       <ul class="gr-navlinks">
       <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
       <li><a href="my-reservations.php">My Reservations</a></li>
-      <li><a href="logout.php">Logout</a></li>
       </ul>
 
       <div class="gr-nav-actions">
-        <a href="farmer-profile.php" class="btn btn-outline">Profile</a>
-        <a href="logout.php" class="btn btn-solid">Log Out</a>
+        <a href="farmer-profile.php" class="farmer-badge" title="Go to your profile">
+          <div class="avatar"><?= strtoupper(substr($currentUser['first_name'], 0, 1) . substr($currentUser['last_name'], 0, 1)) ?></div>
+          <?= htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) ?>
+        </a>
+        <a href="logout.php" class="btn-logout">Logout</a>
       </div>
     </nav>
   </header>
