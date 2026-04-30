@@ -28,7 +28,8 @@ It connects equipment owners with renters, making the process of finding, listin
 ## 🛠️ Technologies Used
 - HTML  
 - CSS  
-- JavaScript  
+- JavaScript
+- -PHP
 ---
 
 ## Team Members
