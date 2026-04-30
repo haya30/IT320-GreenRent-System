@@ -16,7 +16,6 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email']    ?? '');
     $password = $_POST['password']      ?? '';
-    $type     = $_POST['login_type']    ?? 'user'; // user | admin
 
     if (!$email || !$password) {
         $error = 'Please enter both email and password.';
@@ -31,26 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Your account has been suspended. Please contact the admin.';
             } elseif ($row['status'] === 'inactive') {
                 $error = 'Your account is inactive.';
-            } elseif ($type === 'admin' && $row['role'] !== 'admin') {
-                $error = 'No admin account found with these credentials.';
-            } elseif ($type === 'user' && $row['role'] === 'admin') {
-                $error = 'Please use the Admin Sign In button.';
             } else {
-                $_SESSION['user'] = [
-                    'id'           => $row['user_id'],
-                    'user_id'      => $row['user_id'],
-                    'name'         => $row['first_name'] . ' ' . $row['last_name'],
-                    'first_name'   => $row['first_name'],
-                    'last_name'    => $row['last_name'],
-                    'email'        => $row['email'],
-                    'phone_number' => $row['phone_number'],
-                    'role'         => $row['role'],
-                    'status'       => $row['status'],
-                ];
+                $_SESSION['user'] = $row;
                 if ($row['role'] === 'admin')     header("Location: admin-dashboard.php");
                 elseif ($row['role'] === 'owner') header("Location: owner-dashboard.php");
                 else                              header("Location: farmer-dashboard.php");
-                exit; 
+                exit;
             }
         } else {
             $error = 'Incorrect email or password. Please try again.';
@@ -256,52 +241,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .alert.show { display: flex; }
     .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
 
-    /* ── LOGIN BUTTONS ── */
-    .login-btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 4px;
-    }
-    .login-main-btn {
+    /* ── LOGIN BUTTON ── */
+    .auth-submit-btn {
       width: 100%;
+      padding: 13px;
+      background: var(--green-mid);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: 4px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 16px 18px;
-      border-radius: 14px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all .2s;
-      text-align: left;
+      justify-content: center;
+      gap: 8px;
     }
-    .login-btn-icon { font-size: 26px; flex-shrink: 0; }
-    .login-btn-label { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-    .login-btn-title { font-weight: 700; font-size: 14.5px; }
-    .login-btn-sub { font-size: 12px; opacity: .7; }
-    .login-btn-user {
-      background: var(--green-pale);
-      border-color: var(--green-light);
-      color: var(--green-deep);
-    }
-    .login-btn-user:hover {
-      background: #c3ebca;
-      border-color: var(--green-mid);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(45,106,79,.2);
-    }
-    .login-btn-admin {
-      background: #fff8f0;
-      border-color: #f59e0b;
-      color: #78350f;
-    }
-    .login-btn-admin:hover {
-      background: #fef3c7;
-      border-color: #d97706;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(245,158,11,.2);
-    }
+    .auth-submit-btn:hover { background: var(--green-deep); transform: translateY(-1px); }
+    .auth-submit-btn:active { transform: translateY(0); }
 
     .auth-divider {
       text-align: center;
@@ -379,8 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <span id="login-alert-msg">Please fill in all required fields correctly.</span>
       </div>
 
-      <form id="loginForm" method="POST" action="login.php">
-        <input type="hidden" name="login_type" id="login_type" value="user">
+      <form id="loginForm" method="POST" action="login.php" onsubmit="return validateLogin(event)">
 
         <div class="form-group">
           <label class="form-label">Email Address <span>*</span></label>
@@ -400,24 +359,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="field-error" id="err-login-password">⚠ Password is required</div>
         </div>
 
-        <div class="login-btn-group">
-          <button type="button" class="login-main-btn login-btn-user" onclick="submitLogin('user')">
-            <span class="login-btn-icon">👤</span>
-            <span class="login-btn-label">
-              <span class="login-btn-title">Sign In as User</span>
-              <span class="login-btn-sub">Farmer or Equipment Owner</span>
-            </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button type="button" class="login-main-btn login-btn-admin" onclick="submitLogin('admin')">
-            <span class="login-btn-icon">⚙️</span>
-            <span class="login-btn-label">
-              <span class="login-btn-title">Sign In as Admin</span>
-              <span class="login-btn-sub">Platform Management</span>
-            </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
+        <button type="submit" class="auth-submit-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Sign In
+        </button>
       </form>
 
       <div class="auth-divider" style="margin-top:20px">
@@ -452,43 +397,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // دالة الإرسال المعدلة لتربط بين الـ JS والـ PHP
-  function submitLogin(type) {
+  function validateLogin(event) {
     const emailEl  = document.getElementById('login-email');
     const pwdEl    = document.getElementById('login-password');
-    const emailVal = emailEl.value.trim().toLowerCase();
+    const emailVal = emailEl.value.trim();
     const pwdVal   = pwdEl.value;
 
     let hasError = false;
-    
-    // التحقق من صيغة الإيميل
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
       emailEl.classList.add('error');
       document.getElementById('err-login-email').classList.add('show');
       hasError = true;
     }
-    
-    // التحقق من كتابة الباسورد
+
     if (!pwdVal) {
       pwdEl.classList.add('error');
       document.getElementById('err-login-password').classList.add('show');
       hasError = true;
     }
-    
-    // إذا كان هناك خطأ، أوقف العملية واعرض رسالة التنبيه الحمراء
+
     if (hasError) {
+      event.preventDefault();
       document.getElementById('login-alert').classList.add('show');
-      return;
+      return false;
     }
 
-    // إذا كانت البيانات سليمة مبدئياً:
-    // 1. عيّن نوع الدخول (مستخدم أو آدمن) في الحقل المخفي
-    document.getElementById('login_type').value = type;
-    
-    // 2. أرسل الفورم للسيرفر (PHP) ليكمل عملية التحقق من قاعدة البيانات
-    document.getElementById('loginForm').submit();
+    return true;
   }
 </script>
+
 <footer>
   <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
     <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>

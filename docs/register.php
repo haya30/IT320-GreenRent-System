@@ -23,7 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // في تصميمك اسم المزارع "farmer"، لكن في قاعدة البيانات لدينا اسمه "renter"
     $db_role = ($role_input === 'farmer') ? 'renter' : $role_input;
 
-    if (!$first_name || !$last_name || !$email || !$phone_number || !$db_role || !$password) {
+    // منع تسجيل role=admin عبر الفورم
+    if ($db_role === 'admin') {
+        $error = 'Invalid role selected.';
+    } elseif (!$first_name || !$last_name || !$email || !$phone_number || !$db_role || !$password) {
         $error = 'Please fill in all required fields.';
     } elseif ($password !== $confirm) {
         $error = 'Passwords do not match.';
@@ -48,21 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 $stmt_insert->execute();
-                $_SESSION['user'] = [
-                    'id'           => $conn->insert_id,
-                    'user_id'      => $conn->insert_id,
-                    'name'         => $first_name . ' ' . $last_name,
-                    'first_name'   => $first_name,
-                    'last_name'    => $last_name,
-                    'email'        => $email,
-                    'phone_number' => $phone_number,
-                    'role'         => $db_role,
-                    'status'       => 'active',
-                ];
-                if ($db_role === 'admin')     { header("Location: admin-dashboard.php"); }
-                elseif ($db_role === 'owner') { header("Location: owner-dashboard.php"); }
-                else                           { header("Location: farmer-dashboard.php"); }
-                exit;
+                $success = 'Account created successfully!';
+                
+                // تنظيف المتغيرات بعد النجاح حتى لا يتم تعبئتها مجدداً في الفورم
+                $_POST = array();
             } catch (Exception $e) {
                 $error = 'An error occurred during registration. Please try again.';
             }
@@ -469,7 +461,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <option value="">— Select your role —</option>
               <option value="farmer" <?= (isset($_POST['role']) && $_POST['role'] === 'farmer') ? 'selected' : '' ?>>🌾 Farmer</option>
               <option value="owner" <?= (isset($_POST['role']) && $_POST['role'] === 'owner') ? 'selected' : '' ?>>🏭 Equipment Owner</option>
-              <option value="admin" <?= (isset($_POST['role']) && $_POST['role'] === 'admin') ? 'selected' : '' ?>>⚙️ Admin</option>
             </select>
             <div class="field-error" id="err-reg-role">⚠ Please select a role</div>
             <div class="role-info-box" id="role-info"></div>
@@ -610,7 +601,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const msgs = {
       farmer: '🌾 As a Farmer, you can search, filter, and reserve agricultural equipment for your needs.',
       owner:  '🏭 As an Equipment Owner, you can list your machinery, manage availability, and receive secure payments.',
-      admin:  '⚙️ As an Admin, you can manage users, equipment listings, reservations, and platform reviews.'
     };
     if (role && msgs[role]) {
       infoBox.textContent = msgs[role];
@@ -637,7 +627,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // الدالة التي تمنع إرسال الفورم للسيرفر إذا كانت هناك أخطاء
   function validateAllFields(event) {
     const fname = validateField('reg-fname');
     const lname = validateField('reg-lname');
@@ -658,16 +647,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const alertMsg = document.getElementById('reg-alert-msg');
 
     if (!fname || !lname || !email || !phone || !roleValid || !pwd || !conf) {
-      event.preventDefault(); // إيقاف إرسال النموذج للسيرفر
+      event.preventDefault();
       alertMsg.textContent = 'Please fill in all required fields correctly.';
       alertEl.classList.add('show');
       return false;
     }
 
     alertEl.classList.remove('show');
-    return true; // السماح بالإرسال
+    return true;
   }
 </script>
+
 <footer>
   <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
     <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
