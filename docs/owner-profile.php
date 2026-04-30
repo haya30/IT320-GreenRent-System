@@ -4,14 +4,13 @@ require_once __DIR__ . '/db.php';
 
 function e($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 
-$userId = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
-$role = $_SESSION['role'] ?? null;
-
-if (!$userId) {
+// ✅ الجديد
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'owner') {
     header('Location: login.php');
     exit();
 }
 
+$userId = $_SESSION['user']['user_id'];
 
 $stmt = $conn->prepare("SELECT user_id, first_name, last_name, email, phone_number, role, status FROM users WHERE user_id = ? AND role = 'owner' LIMIT 1");
 $stmt->bind_param('i', $userId);
@@ -22,7 +21,6 @@ if (!$owner) {
     header('Location: login.php');
     exit();
 }
-
 $fullName = trim($owner['first_name'] . ' ' . $owner['last_name']);
 
 $stats = [
@@ -488,7 +486,7 @@ $recentEquipment = $stmt->get_result();
   <header class="gr-header">
     <nav class="gr-nav">
       <a href="index.php" class="gr-logo">
-        <img src="logo.jpg" alt="GreenRent Logo" />
+        <img src="logo.png" alt="GreenRent Logo" />
         <div class="gr-logo-text">
           <span>GreenRent</span>
           <span>Agricultural Equipment</span>
@@ -523,7 +521,7 @@ $recentEquipment = $stmt->get_result();
           <span class="hero-badge-dot"></span>
           Owner Profile
         </div>
-        <h1>Manage your account and equipment activity</h1>
+        <h1>Manage your equipment activity</h1>
         <p>
           View your owner information, check your equipment summary,
           and manage your activity across listings and reservations from one place.
@@ -532,7 +530,7 @@ $recentEquipment = $stmt->get_result();
 
       <div class="hero-actions">
         <a href="owner-dashboard.php" class="btn btn-soft">Back to Dashboard</a>
-        <a href="#" class="btn btn-solid">Edit Profile</a>
+        
       </div>
     </section>
 
@@ -549,6 +547,7 @@ $recentEquipment = $stmt->get_result();
           <div class="contact-list">
             <div class="contact-item">
               <div class="contact-icon">📧</div>
+              <a href="owner-profile.php"></a>
               <div class="contact-text">
                 <strong>Email Address</strong>
                 <span><?= e($owner['email']) ?></span>
