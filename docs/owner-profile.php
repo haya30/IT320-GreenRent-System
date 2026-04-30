@@ -499,14 +499,6 @@ $recentEquipment = $stmt->get_result();
         <li><a href="view-reservations.php">Reservations</a></li>
       </ul>
 
-      <div class="gr-search">
-        <svg class="gr-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input type="text" placeholder="Search equipment..." />
-      </div>
-
       <div class="gr-nav-actions">
         <a href="index.php" class="btn btn-outline">Home</a>
         <a href="logout.php" class="btn btn-solid">Log Out</a>
