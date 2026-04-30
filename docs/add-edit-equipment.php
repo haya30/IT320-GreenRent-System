@@ -1,8 +1,17 @@
 <?php
 session_start();
 include 'db.php';
-requireRole('owner');
+
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'owner') {
+    header("Location: login.php");
+    exit;
+}
+
 $owner_id = $_SESSION['user']['user_id'];
+$user = $_SESSION['user'];
+
+$initials = strtoupper(mb_substr($user['first_name'], 0, 1) . mb_substr($user['last_name'], 0, 1));
+$short_name = htmlspecialchars($user['first_name'] . ' ' . mb_substr($user['last_name'], 0, 1) . '.');
 
 $message = "";
 $messageType = "success";
@@ -29,8 +38,8 @@ $editData = [
 if (isset($_GET['edit_id']) && !empty($_GET['edit_id'])) {
     $edit_id = intval($_GET['edit_id']);
 
-    $stmt = $conn->prepare("SELECT * FROM equipment WHERE equipment_id = ?");
-    $stmt->bind_param("i", $edit_id);
+    $stmt = $conn->prepare("SELECT * FROM equipment WHERE equipment_id = ? AND owner_id = ?");
+    $stmt->bind_param("ii", $edit_id, $owner_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -51,6 +60,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $operator = intval($_POST["operator_included"] ?? 0);
 
     $image_url = $editData["image_url"] ?? "";
+
+    // If user clicked Clear and saved without choosing a new image
+    if (isset($_POST["remove_image"]) && $_POST["remove_image"] === "1") {
+        $image_url = "";
+    }
 
     if ($name === "" || $type === "" || $description === "" || $condition === "" || $price <= 0 || $location === "") {
         $message = "Please fill in all required fields correctly.";
@@ -119,8 +133,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $message = "Equipment updated successfully.";
                 $messageType = "success";
 
-                $stmt = $conn->prepare("SELECT * FROM equipment WHERE equipment_id = ?");
-                $stmt->bind_param("i", $equipment_id);
+                $stmt = $conn->prepare("SELECT * FROM equipment WHERE equipment_id = ? AND owner_id = ?");
+                $stmt->bind_param("ii", $equipment_id, $owner_id);
                 $stmt->execute();
                 $editData = $stmt->get_result()->fetch_assoc();
             } else {
@@ -162,11 +176,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $equipmentList = [];
-$result = $conn->query("SELECT equipment_id, equipment_name FROM equipment WHERE owner_id = $owner_id ORDER BY equipment_id DESC");
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $equipmentList[] = $row;
-    }
+
+$stmt = $conn->prepare("SELECT equipment_id, equipment_name FROM equipment WHERE owner_id = ? ORDER BY equipment_id DESC");
+$stmt->bind_param("i", $owner_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $equipmentList[] = $row;
 }
 
 $isEditMode = !empty($editData["equipment_id"]);
@@ -183,12 +200,183 @@ $isEditMode = !empty($editData["equipment_id"]);
   <link href="style.css" rel="stylesheet"/>
 
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-deep:  #1a3c2b;
+      --green-mid:   #2d6a4f;
+      --green-light: #52b788;
+      --green-pale:  #d8f3dc;
+      --cream:       #faf7f0;
+      --text-dark:   #1a2e1e;
+      --text-muted:  #5a7a62;
+      --white:       #ffffff;
+      --shadow-sm:   0 2px 8px rgba(26,60,43,.10);
+      --shadow-md:   0 6px 24px rgba(26,60,43,.16);
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
-      background: #f6fbf6;
+      background: #eef5ee;
+      color: var(--text-dark);
+      min-height: 100vh;
       margin: 0;
-      color: #1f2937;
     }
+
+    a { text-decoration: none; }
+
+    .gr-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid rgba(82,183,136,.20);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .gr-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .gr-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .gr-logo img { height: 40px; width: auto; }
+
+    .gr-logo-text span:first-child {
+      display: block;
+      font-family: 'DM Serif Display', serif;
+      font-size: 21px;
+      color: var(--green-deep);
+      line-height: 1;
+    }
+
+    .gr-logo-text span:last-child {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .gr-navlinks {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+      margin: 0 auto;
+    }
+
+    .gr-navlinks a {
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 14.5px;
+      transition: color 0.2s;
+    }
+
+    .gr-navlinks a:hover,
+    .gr-navlinks a.active {
+      color: var(--green-deep);
+      font-weight: 700;
+    }
+
+    .gr-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .farmer-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      background: var(--cream);
+      padding: 4px 14px 4px 4px;
+      border-radius: 30px;
+      border: 1px solid rgba(82,183,136,.2);
+    }
+
+    .farmer-badge .avatar {
+      width: 30px;
+      height: 30px;
+      background: var(--green-mid);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .btn,
+    .btn-solid,
+    .btn-outline,
+    .btn-soft {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .2s;
+    }
+
+    .btn-solid {
+      background: #2d6a4f;
+      color: white;
+      box-shadow: 0 2px 8px rgba(45,106,79,.25);
+    }
+
+    .btn-solid:hover {
+      background: #1a3c2b;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: white;
+      color: #2d6a4f;
+      border: 1.5px solid #2d6a4f;
+    }
+
+    .btn-outline:hover { background: var(--green-pale); }
+
+    .btn-soft {
+      background: rgba(255,255,255,.14);
+      color: white;
+      border: 1px solid rgba(255,255,255,.25);
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1.5px solid #e74c3c;
+      color: #e74c3c;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13.5px;
+      transition: .2s;
+    }
+
+    .btn-logout:hover { background: #fef2f2; }
 
     .equip-page {
       max-width: 1200px;
@@ -236,7 +424,9 @@ $isEditMode = !empty($editData["equipment_id"]);
       gap: 24px;
     }
 
-    .form-panel, .tips-panel, .preview-box {
+    .form-panel,
+    .tips-panel,
+    .preview-box {
       background: white;
       border: 1px solid rgba(82,183,136,.18);
       border-radius: 20px;
@@ -264,9 +454,8 @@ $isEditMode = !empty($editData["equipment_id"]);
       font-size: 13px;
     }
 
-    .form-body, .tips-body {
-      padding: 24px;
-    }
+    .form-body,
+    .tips-body { padding: 24px; }
 
     .message {
       border-radius: 14px;
@@ -309,20 +498,18 @@ $isEditMode = !empty($editData["equipment_id"]);
       gap: 8px;
     }
 
-    .form-group.full {
-      grid-column: 1 / -1;
-    }
+    .form-group.full { grid-column: 1 / -1; }
 
     .form-label {
       font-size: 13px;
       font-weight: 700;
     }
 
-    .form-label span {
-      color: #dc2626;
-    }
+    .form-label span { color: #dc2626; }
 
-    .form-input, .form-select, .form-textarea {
+    .form-input,
+    .form-select,
+    .form-textarea {
       width: 100%;
       padding: 12px 14px;
       border: 1.5px solid rgba(82,183,136,.30);
@@ -373,34 +560,6 @@ $isEditMode = !empty($editData["equipment_id"]);
       flex-wrap: wrap;
     }
 
-    .btn {
-      display: inline-block;
-      padding: 11px 18px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .btn-solid {
-      background: #2d6a4f;
-      color: white;
-    }
-
-    .btn-outline {
-      background: white;
-      color: #2d6a4f;
-      border: 1.5px solid #2d6a4f;
-    }
-
-    .btn-soft {
-      background: rgba(255,255,255,.14);
-      color: white;
-      border: 1px solid rgba(255,255,255,.25);
-    }
-
     .info-card {
       background: #f8fcf8;
       border: 1px solid rgba(82,183,136,.16);
@@ -414,15 +573,14 @@ $isEditMode = !empty($editData["equipment_id"]);
       margin: 0 0 8px;
     }
 
-    .info-card p, .info-card ul {
+    .info-card p,
+    .info-card ul {
       color: #6b7280;
       font-size: 13px;
       line-height: 1.7;
     }
 
-    .preview-box {
-      margin-top: 26px;
-    }
+    .preview-box { margin-top: 26px; }
 
     .preview-card {
       padding: 22px;
@@ -478,8 +636,104 @@ $isEditMode = !empty($editData["equipment_id"]);
       margin-top: 14px;
     }
 
+    footer {
+      background: var(--green-deep);
+      color: white;
+      margin-top: 40px;
+    }
+
+    .footer-wave {
+      display: block;
+      width: 100%;
+      height: 50px;
+    }
+
+    .footer-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 32px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-logo img { height: 44px; }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+      text-align: center;
+      max-width: 440px;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      transition: background .2s;
+    }
+
+    .footer-social a:hover { background: var(--green-light); }
+
+    .footer-badges {
+      border-top: 1px solid rgba(255,255,255,.10);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .f-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      color: rgba(255,255,255,.65);
+    }
+
+    .f-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    .footer-bottom-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 32px;
+      text-align: center;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.40);
+    }
+
     @media (max-width: 900px) {
-      .equip-layout, .preview-card {
+      .equip-layout,
+      .preview-card {
         grid-template-columns: 1fr;
       }
 
@@ -507,14 +761,18 @@ $isEditMode = !empty($editData["equipment_id"]);
     </a>
 
     <ul class="gr-navlinks">
-      <li><a href="owner-dashboard.php">Dashboard</a></li>
+      <li><a href="owner-dashboard.php" class="active">Owner Dashboard</a></li>
       <li><a href="add-edit-equipment.php">Manage Equipment</a></li>
       <li><a href="view-reservations.php">Reservations</a></li>
+      <li><a href="owner-profile.php">My Profile</a></li>
     </ul>
 
     <div class="gr-nav-actions">
-      <a href="owner-profile.php" class="btn btn-outline">Profile</a>
-      <a href="login.php" class="btn btn-solid">Log Out</a>
+      <div class="farmer-badge" title="<?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>">
+        <div class="avatar"><?= $initials ?></div>
+        <?= $short_name ?>
+      </div>
+      <a href="logout.php" class="btn-logout">Logout</a>
     </div>
   </nav>
 </header>
@@ -574,6 +832,7 @@ $isEditMode = !empty($editData["equipment_id"]);
 
         <form id="equipmentForm" method="POST" action="" enctype="multipart/form-data" novalidate>
           <input type="hidden" name="equipment_id" value="<?php echo htmlspecialchars($editData['equipment_id']); ?>">
+          <input type="hidden" name="remove_image" id="removeImage" value="0">
 
           <div class="form-grid">
 
@@ -616,9 +875,12 @@ $isEditMode = !empty($editData["equipment_id"]);
             <div class="form-group">
               <label class="form-label">Availability Status <span>*</span></label>
               <select class="form-select required-field" id="equipmentStatus" name="availability_status" required>
-                <option value="available" <?php if($editData['availability_status']=="available") echo "selected"; ?>>Available</option>
-                <option value="reserved" <?php if($editData['availability_status']=="reserved") echo "selected"; ?>>Reserved</option>
-                <option value="inactive" <?php if($editData['availability_status']=="inactive") echo "selected"; ?>>Inactive</option>
+                <option value="available" <?php if($editData['availability_status'] == "available") echo "selected"; ?>>
+                  Available
+                </option>
+                <option value="unavailable" <?php if($editData['availability_status'] == "unavailable") echo "selected"; ?>>
+                  Unavailable
+                </option>
               </select>
             </div>
 
@@ -672,6 +934,7 @@ $isEditMode = !empty($editData["equipment_id"]);
             </button>
           </div>
         </form>
+
       </div>
     </div>
 
@@ -759,20 +1022,6 @@ $isEditMode = !empty($editData["equipment_id"]);
     <p class="footer-tagline">
       A trusted platform connecting farmers and equipment owners across Riyadh.
     </p>
-
-    <div class="footer-social">
-      <a href="#" aria-label="Twitter">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-        </svg>
-      </a>
-
-      <a href="#" aria-label="Instagram">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-        </svg>
-      </a>
-    </div>
   </div>
 
   <div class="footer-badges">
@@ -870,6 +1119,8 @@ function updatePreview() {
 
 // ================= IMAGE PREVIEW =================
 document.getElementById("equipmentImage").addEventListener("change", function(e) {
+  document.getElementById("removeImage").value = "0";
+
   var file = e.target.files[0];
   var previewDiv = document.getElementById("previewImage");
 
@@ -884,7 +1135,6 @@ document.getElementById("equipmentImage").addEventListener("change", function(e)
 
 // ================= CLEAR BUTTON =================
 document.getElementById("clearBtn").addEventListener("click", function() {
-  // Clear all form fields to empty
   document.querySelectorAll(".required-field").forEach(function(field) {
     field.value = "";
     field.classList.remove("invalid");
@@ -896,23 +1146,18 @@ document.getElementById("clearBtn").addEventListener("click", function() {
   var fileInput = document.getElementById("equipmentImage");
   if (fileInput) fileInput.value = "";
 
-  // Remove any inline error message
   var oldMsg = document.getElementById("clientMessage");
   if (oldMsg) oldMsg.remove();
 
-  // Reset image preview: keep the server-loaded image in edit mode, else show emoji
   var previewDiv = document.getElementById("previewImage");
-  if (existingImageUrl) {
-    previewDiv.innerHTML = '<img src="' + existingImageUrl + '" alt="Equipment Image" style="width:100%;height:100%;min-height:180px;object-fit:cover;">';
-  } else {
-    previewDiv.innerHTML = "🚜";
-  }
+  previewDiv.innerHTML = "🚜";
+  existingImageUrl = "";
 
-  // Reset preview text to placeholder defaults
+  document.getElementById("removeImage").value = "1";
+
   updatePreview();
 });
 
-// populate preview on page load (important for edit mode)
 updatePreview();
 </script>
 
