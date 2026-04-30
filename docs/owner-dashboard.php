@@ -316,7 +316,15 @@ $latest_reservations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             ?>
             <div class="equipment-item">
               <div class="item-left">
-                <div class="item-icon"><?= $emoji ?></div>
+                <div class="item-icon">
+  <?php if (!empty($eq['image_url'])): ?>
+    <img src="<?= htmlspecialchars($eq['image_url']) ?>" 
+         alt="<?= htmlspecialchars($eq['equipment_name']) ?>"
+         style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+  <?php else: ?>
+    <?= $emoji ?>
+  <?php endif; ?>
+</div>
                 <div class="item-text">
                   <h4><?= htmlspecialchars($eq['equipment_name']) ?></h4>
                   <p><?= htmlspecialchars($eq['location']) ?> • <?= htmlspecialchars($eq['type']) ?></p>

@@ -373,8 +373,22 @@ $equip_options = $eq_names->get_result()->fetch_all(MYSQLI_ASSOC);
             <!-- Equipment -->
             <td>
               <div class="equipment-cell">
-                <div class="cell-icon"><?= $emoji ?></div>
-                <div class="cell-text">
+<div class="cell-icon" style="overflow:hidden; padding:0;">
+  <?php
+    $img = $r['image_url'] ?? '';
+    $src = '';
+    if (!empty($img)) {
+        if (file_exists($img)) $src = $img;
+        elseif (file_exists('uploads/' . $img)) $src = 'uploads/' . $img;
+        elseif (file_exists('../uploads/' . $img)) $src = '../uploads/' . $img;
+    }
+  ?>
+  <?php if ($src): ?>
+    <img src="<?= htmlspecialchars($src) ?>" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:12px;">
+  <?php else: ?>
+    <?= $emoji ?>
+  <?php endif; ?>
+</div>                <div class="cell-text">
                   <strong><?= htmlspecialchars($r['equipment_name']) ?></strong>
                   <span><?= htmlspecialchars($r['location']) ?> · <?= htmlspecialchars($r['type']) ?></span>
                 </div>

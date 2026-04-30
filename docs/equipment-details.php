@@ -62,6 +62,19 @@ if ($total_reviews > 0) {
 
 $owner_initials = strtoupper(mb_substr($equipment['owner_first'], 0, 1) . mb_substr($equipment['owner_last'], 0, 1));
 $price = (float)$equipment['price_per_day'];
+
+// 4. إصلاح مسار الصورة — يجرب كل الاحتمالات
+$img_path = $equipment['image_url'] ?? '';
+$img_src = '';
+if (!empty($img_path)) {
+    if (file_exists($img_path)) {
+        $img_src = $img_path;
+    } elseif (file_exists('uploads/' . $img_path)) {
+        $img_src = 'uploads/' . $img_path;
+    } elseif (file_exists('../uploads/' . $img_path)) {
+        $img_src = '../uploads/' . $img_path;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,27 +104,22 @@ $price = (float)$equipment['price_per_day'];
     }
 
     body { font-family: 'DM Sans', sans-serif; background: #eef5ee; color: var(--text-dark); min-height: 100vh; }
-    
-    /* ── HEADER (Same as your HTML) ── */
+
+    /* ── HEADER — نفس ستايل farmer-dashboard ── */
     .gr-header { position: sticky; top: 0; z-index: 100; background: var(--white); border-bottom: 1px solid rgba(82,183,136,.20); box-shadow: var(--shadow-sm); }
-    .gr-nav { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-    .gr-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-    .gr-logo img { height: 42px; width: auto; border-radius: 0; background: transparent; }
-    .gr-logo-text { line-height: 1; }
-    .gr-logo-text span:first-child { display: block; font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--green-deep); letter-spacing: -.3px; }
-    .gr-logo-text span:last-child { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 500; letter-spacing: .8px; text-transform: uppercase; }
+    .gr-nav { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .gr-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .gr-logo img { height: 40px; width: auto; }
+    .gr-logo-text span:first-child { display: block; font-family: 'DM Serif Display', serif; font-size: 21px; color: var(--green-deep); line-height: 1; }
+    .gr-logo-text span:last-child { display: block; font-size: 10px; color: var(--text-muted); font-weight: 500; letter-spacing: .8px; text-transform: uppercase; margin-top: 2px; }
     .gr-navlinks { display: flex; gap: 24px; list-style: none; margin: 0 auto; }
-    .gr-navlinks a { text-decoration: none; font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color .18s; }
-    .gr-navlinks a:hover, .gr-navlinks a.active { color: var(--green-mid); }
-    
-    .gr-search { position: relative; flex: 0 0 220px; }
-    .gr-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-    .gr-search input { width: 100%; padding: 8px 12px 8px 32px; border: 1.5px solid rgba(82,183,136,.25); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-dark); background: var(--cream); outline: none; }
-    .gr-search input:focus { border-color: var(--green-light); }
-    
-    .gr-nav-actions { display: flex; align-items: center; gap: 10px; }
-    .farmer-badge { display: flex; align-items: center; gap: 8px; background: var(--green-pale); border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--green-deep); }
-    .farmer-badge .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--green-mid); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .gr-navlinks a { color: var(--text-muted); font-weight: 500; font-size: 14.5px; transition: color 0.2s; text-decoration: none; }
+    .gr-navlinks a:hover, .gr-navlinks a.active { color: var(--green-deep); font-weight: 700; }
+    .gr-nav-actions { display: flex; align-items: center; gap: 16px; }
+    .farmer-badge { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--text-dark); background: var(--cream); padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid rgba(82,183,136,.2); transition: background 0.2s; text-decoration: none; cursor: pointer; }
+    .farmer-badge .avatar { width: 30px; height: 30px; background: var(--green-mid); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    .btn-logout { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; transition: .2s; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-logout:hover { background: #fef2f2; }
 
     /* ── GENERAL STYLES ── */
     .btn { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; border-radius: 10px; padding: 9px 18px; cursor: pointer; border: none; transition: all .18s; text-decoration: none; }
@@ -124,7 +132,7 @@ $price = (float)$equipment['price_per_day'];
     .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
     .breadcrumb a { color: var(--green-mid); text-decoration: none; font-weight: 500; }
     .breadcrumb a:hover { text-decoration: underline; }
-    
+
     .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
     .badge-available { background: rgba(82,183,136,.15); color: var(--green-mid); }
     .badge-unavailable { background: rgba(231,76,60,.15); color: #c0392b; }
@@ -171,7 +179,7 @@ $price = (float)$equipment['price_per_day'];
 
     /* ── TAB CONTENTS ── */
     .detail-desc { font-size: 14.5px; line-height: 1.75; color: var(--text-dark); margin-bottom: 20px; white-space: pre-wrap; }
-    
+
     .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .spec-row { background: var(--cream); border: 1px solid rgba(82,183,136,.15); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
     .spec-key { font-size: 13px; color: var(--text-muted); font-weight: 500; }
@@ -195,7 +203,7 @@ $price = (float)$equipment['price_per_day'];
     .booking-avail-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
     .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #74e094; flex-shrink: 0; }
     .avail-text { font-size: 13px; color: rgba(255,255,255,.80); }
-    
+
     .booking-card-body { padding: 22px; }
     .date-range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .date-input-wrap { display: flex; flex-direction: column; gap: 5px; }
@@ -212,21 +220,21 @@ $price = (float)$equipment['price_per_day'];
     .owner-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--green-deep), var(--green-mid)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; }
     .owner-name { font-weight: 700; font-size: 15px; }
     .owner-since { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    
-    .terms-card { background: var(--cream); border: 1px solid rgba(82,183,136,.18); border-radius: var(--radius); padding: 18px 20px; margin-top: 16px; }
-    .terms-card-title { font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
-    .term-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-dark); margin-bottom: 8px; line-height: 1.5; }
 
     /* ── FOOTER ── */
-    footer { background: var(--green-deep); color: rgba(255,255,255,.85); }
+    footer { background: var(--green-deep); color: rgba(255,255,255,.85); margin-top: 60px; }
     .footer-wave { display: block; width: 100%; height: 50px; }
-    .footer-main { max-width: 1200px; margin: 0 auto; padding: 48px 32px 36px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; }
-    .footer-logo img { height: 48px; width: auto; display: block; border-radius: 10%; }
-    .footer-social { display: flex; gap: 10px; }
-    .footer-social a { width: 36px; height: 36px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75); text-decoration: none; }
-    .footer-badges { border-top: 1px solid rgba(255,255,255,.10); padding: 18px 32px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .footer-main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .footer-logo img { height: 44px; }
+    .footer-tagline { font-size: 13px; color: rgba(255,255,255,.6); text-align: center; max-width: 440px; }
+    .footer-social { display: flex; gap: 8px; }
+    .footer-social a { width: 36px; height: 36px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.75); text-decoration: none; transition: background .2s; }
+    .footer-social a:hover { background: var(--green-light); }
+    .footer-badges { border-top: 1px solid rgba(255,255,255,.10); max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .f-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 5px 12px; font-size: 11.5px; color: rgba(255,255,255,.65); }
-    .footer-bottom { border-top: 1px solid rgba(255,255,255,.10); text-align: center; padding: 16px 32px; font-size: 12.5px; }
+    .f-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.10); }
+    .footer-bottom-inner { max-width: 1200px; margin: 0 auto; padding: 14px 32px; text-align: center; font-size: 12.5px; color: rgba(255,255,255,.40); }
 
     @media (max-width: 900px) {
       .detail-layout { grid-template-columns: 1fr; }
@@ -234,13 +242,17 @@ $price = (float)$equipment['price_per_day'];
       .specs-grid { grid-template-columns: 1fr; }
       .gr-navlinks { display: none; }
     }
+    @media (max-width: 768px) {
+      .detail-wrap { padding: 24px 16px; }
+    }
   </style>
 </head>
 <body>
 
+<!-- ── HEADER — نفس هيدر farmer-dashboard ── -->
 <header class="gr-header">
   <nav class="gr-nav">
-    <a href="farmer-dashboard.php" class="gr-logo">
+    <a href="index.php" class="gr-logo">
       <img src="logo.png" alt="GreenRent Logo" />
       <div class="gr-logo-text">
         <span>GreenRent</span>
@@ -250,20 +262,14 @@ $price = (float)$equipment['price_per_day'];
     <ul class="gr-navlinks">
       <li><a href="farmer-dashboard.php" class="active">Farmer Dashboard</a></li>
       <li><a href="my-reservations.php">My Reservations</a></li>
-      <li><a href="farmer-profile.php">Profile</a></li>
-      <li><a href="logout.php">Logout</a></li>
+      <li><a href="farmer-profile.php">My Profile</a></li>
     </ul>
-    <div class="gr-search">
-      <svg class="gr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21" stroke-linecap="round"/>
-      </svg>
-      <input type="text" placeholder="Search equipment…"/>
-    </div>
     <div class="gr-nav-actions">
-      <div class="farmer-badge" title="Logged in as <?= htmlspecialchars($user['first_name']) ?>">
+      <a href="farmer-profile.php" class="farmer-badge" title="Go to your profile">
         <div class="avatar"><?= $user_initials ?></div>
         <?= $user_short_name ?>
-      </div>
+      </a>
+      <a href="logout.php" class="btn-logout">Logout</a>
     </div>
   </nav>
 </header>
@@ -279,24 +285,34 @@ $price = (float)$equipment['price_per_day'];
   <div class="detail-layout">
     <div class="detail-main">
 
+      <!-- ── GALLERY مع إصلاح الصورة ── -->
       <div class="detail-gallery">
-        <?php if (!empty($equipment['image_url']) && file_exists('uploads/' . $equipment['image_url'])): ?>
-            <img src="uploads/<?= htmlspecialchars($equipment['image_url']) ?>" alt="Equipment Image">
+        <?php if ($img_src): ?>
+          <img src="<?= htmlspecialchars($img_src) ?>" alt="<?= htmlspecialchars($equipment['equipment_name']) ?>">
         <?php else: ?>
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--green-mid);opacity:0.3;">
-              <rect x="2" y="10" width="14" height="8" rx="2"/><circle cx="6" cy="18" r="2"/><circle cx="14" cy="18" r="2"/><path d="M16 12h4l2 4H16"/><circle cx="20" cy="18" r="2"/>
-            </svg>
+          <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--green-mid);opacity:0.3;">
+            <rect x="2" y="10" width="14" height="8" rx="2"/><circle cx="6" cy="18" r="2"/><circle cx="14" cy="18" r="2"/><path d="M16 12h4l2 4H16"/><circle cx="20" cy="18" r="2"/>
+          </svg>
         <?php endif; ?>
-        
+
         <div class="gallery-badge-wrap">
-          <?php if($equipment['availability_status'] === 'available'): ?>
-             <span class="badge badge-available">● Available Now</span>
-          <?php else: ?>
-             <span class="badge badge-unavailable">● Unavailable</span>
-          <?php endif; ?>
+          <?php
+$hasActiveBooking = mysqli_fetch_assoc(mysqli_query($conn,
+    "SELECT reservation_id FROM reservations
+     WHERE equipment_id = {$equipment['equipment_id']}
+     AND reservation_status IN ('pending','confirmed')
+     AND start_date <= CURDATE() AND end_date > CURDATE()"
+));
+?>
+<?php if(!$hasActiveBooking): ?>
+   <span class="badge badge-available">● Available Now</span>
+<?php else: ?>
+   <span class="badge badge-unavailable">● Unavailable Today</span>
+<?php endif; ?>
         </div>
       </div>
 
+      <!-- ── TITLE BLOCK ── -->
       <div class="detail-title-block">
         <div class="detail-category">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="10" width="14" height="8" rx="2"/></svg>
@@ -306,7 +322,14 @@ $price = (float)$equipment['price_per_day'];
         <div class="detail-meta-row">
           <div class="detail-rating">
             <div class="stars-row">
-              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+              <?php
+                $full_stars = $avg_rating > 0 ? floor($avg_rating) : 0;
+                for($s = 1; $s <= 5; $s++) {
+                    echo $s <= $full_stars
+                        ? '<span class="star">★</span>'
+                        : '<span class="star empty">★</span>';
+                }
+              ?>
             </div>
             <span class="rating-val"><?= $avg_rating > 0 ? $avg_rating : 'New' ?></span>
             <span class="rating-count">(<?= $total_reviews ?> reviews)</span>
@@ -318,6 +341,7 @@ $price = (float)$equipment['price_per_day'];
         </div>
       </div>
 
+      <!-- ── INFO PILLS ── -->
       <div class="info-pills">
         <div class="info-pill">
           <span class="pill-label">Condition</span>
@@ -335,16 +359,19 @@ $price = (float)$equipment['price_per_day'];
         </div>
       </div>
 
+      <!-- ── TABS ── -->
       <div class="detail-tabs">
         <button class="tab-btn active" data-tab="description">Description</button>
         <button class="tab-btn" data-tab="specs">Quick Specs</button>
         <button class="tab-btn" data-tab="reviews">Reviews (<?= $total_reviews ?>)</button>
       </div>
 
+      <!-- Tab: Description -->
       <div class="tab-panel active" id="tab-description">
         <div class="detail-desc"><?= nl2br(htmlspecialchars($equipment['description'])) ?></div>
       </div>
 
+      <!-- Tab: Quick Specs -->
       <div class="tab-panel" id="tab-specs">
         <div class="specs-grid">
           <div class="spec-row"><span class="spec-key">Equipment Type</span><span class="spec-val"><?= htmlspecialchars($equipment['type']) ?></span></div>
@@ -355,8 +382,9 @@ $price = (float)$equipment['price_per_day'];
         <p style="margin-top:15px; font-size:12px; color:var(--text-muted);">* Detailed specifications depend on the exact model described in the description.</p>
       </div>
 
+      <!-- Tab: Reviews -->
       <div class="tab-panel" id="tab-reviews">
-        
+
         <?php if($total_reviews > 0): ?>
         <div style="background:var(--cream);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;">
           <div style="text-align:center;">
@@ -365,7 +393,7 @@ $price = (float)$equipment['price_per_day'];
           </div>
           <div style="flex:1;">
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <?php for($i=5; $i>=1; $i--): 
+              <?php for($i=5; $i>=1; $i--):
                   $percent = ($rating_counts[$i] / $total_reviews) * 100;
               ?>
               <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
@@ -380,7 +408,7 @@ $price = (float)$equipment['price_per_day'];
           </div>
         </div>
 
-        <?php foreach($reviews as $rev): 
+        <?php foreach($reviews as $rev):
             $r_initials = strtoupper(mb_substr($rev['renter_first'], 0, 1) . mb_substr($rev['renter_last'], 0, 1));
         ?>
         <div class="review-item">
@@ -407,7 +435,10 @@ $price = (float)$equipment['price_per_day'];
         <?php endif; ?>
       </div>
 
-    </div><div class="booking-sidebar">
+    </div>
+
+    <!-- ── SIDEBAR ── -->
+    <div class="booking-sidebar">
 
       <div class="booking-card">
         <div class="booking-card-header">
@@ -416,13 +447,13 @@ $price = (float)$equipment['price_per_day'];
             <span class="booking-per">/ day</span>
           </div>
           <div class="booking-avail-row">
-            <?php if($equipment['availability_status'] === 'available'): ?>
-                <div class="avail-dot"></div>
-                <span class="avail-text">Available — Book instantly</span>
-            <?php else: ?>
-                <div class="avail-dot" style="background:#e74c3c;"></div>
-                <span class="avail-text">Currently Unavailable</span>
-            <?php endif; ?>
+           <?php if(!$hasActiveBooking): ?>
+    <div class="avail-dot"></div>
+    <span class="avail-text">Available — Book instantly</span>
+<?php else: ?>
+    <div class="avail-dot" style="background:#f4a800;"></div>
+    <span class="avail-text">Partially Booked — select available dates</span>
+<?php endif; ?>
           </div>
         </div>
         <div class="booking-card-body">
@@ -451,11 +482,8 @@ $price = (float)$equipment['price_per_day'];
                 <span id="sidebar-total">SAR ...</span>
               </div>
               <div class="booking-cta">
-                <?php if($equipment['availability_status'] === 'available'): ?>
-                    <button type="submit" class="btn btn-solid btn-lg" style="width:100%;">Reserve Now</button>
-                <?php else: ?>
-                    <button type="button" class="btn btn-solid btn-lg" style="width:100%; background:#ccc; cursor:not-allowed;" disabled>Not Available</button>
-                <?php endif; ?>
+                <<button type="submit" class="btn btn-solid btn-lg" style="width:100%;">Reserve Now</button>
+
                 <a href="farmer-dashboard.php" class="btn btn-outline" style="justify-content:center;">← Back to Dashboard</a>
               </div>
           </form>
@@ -473,7 +501,12 @@ $price = (float)$equipment['price_per_day'];
         </div>
       </div>
 
-    </div></div></div><footer>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
   <svg class="footer-wave" viewBox="0 0 1440 50" preserveAspectRatio="none">
     <path d="M0,0 C360,50 1080,0 1440,40 L1440,0 Z" fill="#eef5ee"/>
   </svg>
@@ -482,11 +515,19 @@ $price = (float)$equipment['price_per_day'];
       <img src="logo.png" alt="GreenRent Logo" />
     </div>
     <p class="footer-tagline">A trusted platform connecting farmers and equipment owners across Riyadh.</p>
-    <div class="footer-badges">
-      <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
-      <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
-      <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
+    <div class="footer-social">
+      <a href="#" aria-label="Twitter">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+      </a>
+      <a href="#" aria-label="Instagram">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
     </div>
+  </div>
+  <div class="footer-badges">
+    <span class="f-badge"><span class="f-badge-dot"></span> Verified Equipment</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Secure Payments</span>
+    <span class="f-badge"><span class="f-badge-dot"></span> Riyadh — Saudi Arabia</span>
   </div>
   <div class="footer-bottom">
     <div class="footer-bottom-inner">© 2026 GreenRent. All rights reserved.</div>
@@ -504,25 +545,22 @@ $price = (float)$equipment['price_per_day'];
     });
   });
 
-  // Price Calculation Logic using PHP data
-  const startEl = document.getElementById('sidebarStart');
-  const endEl   = document.getElementById('sidebarEnd');
-  const daysEl  = document.getElementById('sidebar-days');
+  // Price Calculation Logic
+  const startEl    = document.getElementById('sidebarStart');
+  const endEl      = document.getElementById('sidebarEnd');
+  const daysEl     = document.getElementById('sidebar-days');
   const subtotalEl = document.getElementById('sidebar-subtotal');
   const totalEl    = document.getElementById('sidebar-total');
-  
-  // تمرير السعر من الداتا بيس للجافاسكربت!
+
   const PRICE = <?= $price ?>;
   const FEE   = 85;
 
   function calcPrice() {
     const s = new Date(startEl.value);
     const e = new Date(endEl.value);
-    
     if (startEl.value && endEl.value && e > s) {
-      const days = Math.ceil((e - s) / 86400000); // تحويل الميلي سكند لأيام
+      const days     = Math.ceil((e - s) / 86400000);
       const subtotal = days * PRICE;
-      
       daysEl.textContent     = days;
       subtotalEl.textContent = 'SAR ' + subtotal.toLocaleString();
       totalEl.textContent    = 'SAR ' + (subtotal + FEE).toLocaleString();
@@ -532,15 +570,14 @@ $price = (float)$equipment['price_per_day'];
       totalEl.textContent    = 'SAR 0';
     }
   }
-  
+
   startEl.addEventListener('change', calcPrice);
   endEl.addEventListener('change', calcPrice);
 
-  // Set default dates (Today and +3 days)
+  // Default dates: today + 3 days
   const today = new Date();
-  const next3  = new Date(today); 
+  const next3 = new Date(today);
   next3.setDate(today.getDate() + 3);
-  
   startEl.value = today.toISOString().split('T')[0];
   endEl.value   = next3.toISOString().split('T')[0];
   calcPrice();
